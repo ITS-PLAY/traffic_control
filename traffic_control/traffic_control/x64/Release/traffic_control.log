@@ -1,3 +1,6 @@
 ﻿  test_main.cpp
   traffic_control.cpp
-f:\202012v2i车道级控制\code\traffic_control\traffic_control\traffic_control.cpp(12): error C2059: 语法错误:“)”
+  正在生成代码
+  All 1 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  traffic_control.vcxproj -> F:\202012V2I车道级控制\code\traffic_control\x64\Release\traffic_control.exe
