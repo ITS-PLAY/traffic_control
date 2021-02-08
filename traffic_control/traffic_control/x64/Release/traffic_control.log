@@ -1,6 +1,6 @@
 ﻿  test_main.cpp
-  traffic_control.cpp
+  variable_lane_control.cpp
   正在生成代码
-  All 1 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 1465 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   已完成代码的生成
   traffic_control.vcxproj -> F:\202012V2I车道级控制\code\traffic_control\x64\Release\traffic_control.exe

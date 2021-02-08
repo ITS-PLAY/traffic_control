@@ -7,6 +7,7 @@
 #include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 using Maneuver = enum { StraightAllowed = 0, LeftAllowed, RightAllowed, UTurnAllowed, LeftTurnOnRedAllowed, RightTurnOnRedAllowed, LaneChangeAllowed, 
                         NoStoppingAllowed, YieldAllwaysRequired, GoWithHalt, Caution, Reserved };
@@ -16,7 +17,7 @@ using Light_State = enum {};
 using Intersection_Status_Object = enum {};
 
 static const double turn_Saturation_Limit = 0.8;               //饱和流率的阈值
-static const double turn_Change_Limit = 0.1;                   //车道切换后的饱和流率差值的阈值
+static const double turn_Change_Limit = 0.4;                   //车道切换后的饱和流率差值的阈值
 
 struct Point {
 	double latitude;
@@ -50,6 +51,7 @@ public:
 	int movement_Volume = 0;
 	int movement_Capacity = 0;
 	double movement_Sat_Ratio = 0.0;
+	int lanes_Nums = 0;
 };
 
 /*-----------------------------------------------------------------------------------*/
@@ -72,8 +74,7 @@ public:
 	int intersection_Id;
 	Intersection_Status_Object status;
 	int Minute_Of_Year;
-	// time_Stamp;
-
+	long long time_Stamp = time_point_cast<seconds>(system_clock::now()).time_since_epoch().count();
 public:
 	map<int,Phase_State> phases;
 };
@@ -86,23 +87,20 @@ public:
 		get_Signal_Controller_Info();
 	};
 	void get_Signal_Controller_Info();
-
 public:
 	int signal_Controller_ID;
 	int signal_Cycle_Time;
 	int signal_Offset_Time;
-
 };
 
 class Signal_Phase_Info {                                       //信号相位参数类
 public:
 	Signal_Phase_Info() {};
-	Signal_Phase_Info(int msignal_Controller_Id, int mphase_Id) {
+	Signal_Phase_Info(int msignal_Controller_Id, int mphase_Id):phase_Id(mphase_Id) {
 		intersection_Signal_Controller = Signal_Controller_Info(msignal_Controller_Id);
 		get_Signal_Phase_Info();
 	};
 	void get_Signal_Phase_Info();
-
 public:
 	int phase_Id;
 	int green_Time;
@@ -128,7 +126,6 @@ public:
 	Lane_Type laneType;
 	vector<Maneuver> maneuvers;
 	vector<Connection> connectsTo;
-
 public:
 	int signal_Controller_Id;
 	int phase_Id;
@@ -148,23 +145,21 @@ public:
 	void get_Lane_Queue_Info() {};
 	void lane_Delay_Caculation() {};
 	void capacity_Intersection_Caculation();
-
 public:
-	int volume_Interval;
-	int volume;
-	int small_Car_Volume;
-	int medium_Car_Volume;
-	int large_Car_Volume;
-	int train_Car_Volume;
-	int transit_Car_Volume;
-	double queue_Length;
-	int queue_Num;
-	int capacity_Saturation;
-	int capacity_Intersection;
-	double delay_Vehicles_Start;
-	double delay_Red_Stop;
-	double delay_Queue_Clearance;
-
+	int volume_Interval = 0;
+	int volume = 0;
+	int small_Car_Volume = 0;
+	int medium_Car_Volume = 0;
+	int large_Car_Volume = 0;
+	int train_Car_Volume = 0;
+	int transit_Car_Volume = 0;
+	double queue_Length = 0.0;
+	int queue_Num = 0;
+	int capacity_Saturation = 0;
+	int capacity_Intersection = 0;
+	double delay_Vehicles_Start = 0.0;
+	double delay_Red_Stop = 0.0;
+	double delay_Queue_Clearance = 0.0;
 public:
 	Signal_Phase_Info lane_Phase_Info;
 };
@@ -193,11 +188,9 @@ public:
 	Link_Index() {};
 	Link_Index(int mupstreamId, int mnodeId):Link_Map(mupstreamId,mnodeId) {
 		get_Link_Index_Info();
-		movements_Index_Caculation();
 	};
 	void get_Link_Index_Info();
 	void movements_Index_Caculation();
-
 public:
 	map<Turn_Type,Movement_Index> link_Movements_Index;
 	map<int,Lane_Index> lanes_Index;
@@ -205,6 +198,7 @@ public:
 
 class Node_Map {
 public:
+	Node_Map() {};
 	Node_Map(int mnodeId):nodeId(mnodeId) {
 		get_Node_Map_Info();
 	};
@@ -214,33 +208,45 @@ public:
 	string node_Name;
 	vector<int> upstream_Nodes;
 };
-
-class Variable_Lane_Control {                                    //可变导向的功能类
+class Node_Index :public Node_Map{
 public:
-	Variable_Lane_Control(int mupstreamId, int mnodeId) {
+	Node_Index() {};
+	Node_Index(int mnodeId) :Node_Map(mnodeId) {}
+public:
+	map<int,Link_Index> entrance_Links_Index;
+};
+
+/*--------------------------------------------------------------------------------------------------------*/
+class Node_Control_Strategy {                                                         //控制抽象类
+public:
+	virtual void get_Node_Index_Info() = 0;
+	virtual void implement_Node_Control_Function() = 0;
+	virtual void put_Control_Delivery() = 0;
+	virtual void update_Node_Index_Info() = 0;
+};
+
+class Node_Variable_Lane_Control:public Node_Control_Strategy,public Link_Index{      //可变导向车道的控制类
+public:
+	Node_Variable_Lane_Control() {};
+	Node_Variable_Lane_Control(int mupstreamId,int mnodeId){
 		entrance_Link_Index = Link_Index(mupstreamId, mnodeId);
+		get_Variable_Lane_State_Info();
 	};
 public:
-	void lane_Movement_Judge();
+	virtual void get_Node_Index_Info();
+	virtual void implement_Node_Control_Function();
+	virtual void put_Control_Delivery();
+	virtual void update_Node_Index_Info();
 	bool modify_Movements_Index(int laneId);
-
+	void get_Variable_Lane_State_Info();
 public:
-	map<int, Turn_Type> variable_Lane_State;                        //可变车道的当前状态
+	map<int, Turn_Type> variable_Lane_State;                        //已渠化的可变车道当前状态
 	map<int, int> map_Iterative_Nums;                               //每个车道，周期迭代的次数
 	Link_Index entrance_Link_Index;
 };
 
-class Node_Control :public Node_Map {                              //交叉口控制类
-public:
-	Node_Control(int mnodeId) :Node_Map(mnodeId) {
-		for (int i = 0; i < upstream_Nodes.size(); i++) {
-			Variable_Lane_Control(upstream_Nodes[i], mnodeId);
-	    }
-	};
-public:
-	
-};
-
+void traffic_Control_Integration(Node_Control_Strategy *node_control, int nodeId);
+/*--------------------------------------------------------------------------------------------------------*/
 
 struct Phase_Node {                                             //相序嵌套的邻接表类
 	int phase_Id;
@@ -250,20 +256,6 @@ struct Phase_Node {                                             //相序嵌套�
 //决策树的节点类
 
 //决策树模型类-控制类
-
-
-//可变导向车道方法
-//车道流量，数据源为毫米波雷达（已由MEC处理，暂存MySQL）
-
-
-//车道通行能力计算，控制数据按照SPAT获取，路网数据按照MAP获取（已由RSU处理）
-
-
-//转向的饱和度，取转向车道的最大饱和度，由车道流量和通行能力计算
-
-//切换的判断
-
-
 
 //交通控制算法
 //1)相序嵌套矩阵，由邻接表建立

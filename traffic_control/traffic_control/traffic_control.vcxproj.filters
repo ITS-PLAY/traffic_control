@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="traffic_control.cpp">
+    <ClCompile Include="test_main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="test_main.cpp">
+    <ClCompile Include="variable_lane_control.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

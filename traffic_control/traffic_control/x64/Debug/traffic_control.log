@@ -1,0 +1,5 @@
+﻿  test_main.cpp
+  variable_lane_control.cpp
+f:\202012v2i车道级控制\code\traffic_control\traffic_control\variable_lane_control.cpp(59): warning C4244: “*=”: 从“double”转换到“int”，可能丢失数据
+  正在生成代码...
+  traffic_control.vcxproj -> F:\202012V2I车道级控制\code\traffic_control\x64\Debug\traffic_control.exe
