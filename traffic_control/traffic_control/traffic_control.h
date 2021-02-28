@@ -12,6 +12,7 @@
 using namespace std;
 using namespace std::chrono;
 
+static const int Time_Interval = 5;                            //时间间隔
 using Maneuver = enum { StraightAllowed = 0, LeftAllowed, RightAllowed, UTurnAllowed, LeftTurnOnRedAllowed, RightTurnOnRedAllowed, LaneChangeAllowed, 
                         NoStoppingAllowed, YieldAllwaysRequired, GoWithHalt, Caution, Reserved };
 using Turn_Type = enum { Straight = 11, Left = 12, Right = 13, StraightLeft = 21, StraightRight = 22, LeftRight = 23, All = 24, UTurn = 31 };
@@ -64,7 +65,6 @@ public:
 public:
 	int phase_Id;
 	Light_State light;
-	bool priority_Right;
 	int start_Time;
 	int min_End_Time;
 	int max_End_Time;
@@ -256,8 +256,15 @@ public:
 
 class Phase_Index {
 public:
-	Phase_Index(int mphase_Id):phase_Id(mphase_Id) {};
-
+	Phase_Index(int mphase_Id, double mphase_Ratio):phase_Id(mphase_Id), phase_Clearance_Ratio(mphase_Ratio){
+		//TODO: 如何通过Lane_Index，计算Phase_Index的指标(多个车道取最大值等集计操作）
+		initial_Green_Time_Caculation();
+		initial_Demand_Caculation();
+		Pedestrian_Time_Caculation();
+	};
+	void initial_Demand_Caculation();
+	void Pedestrian_Time_Caculation();
+	void initial_Green_Time_Caculation();
 public:
 	int volume_Interval = 0;
 	int volume = 0;
@@ -271,13 +278,21 @@ public:
 	double time_Headway_Saturation = 0.0;
 	int capacity_Saturation = 0;
 	int capacity_Intersection = 0;
-	double phase_Clearance_Ratio = 1.0;
-private:
+	double delay_Vehicles_Start = 0.0;
+	double delay_Red_Stop = 0.0;
+	double delay_Queue_Clearance = 0.0;
+	double phase_Clearance_Ratio = 1.0;                         //清空比例
+	double green_Time_Pedestrian = 0.0;                         //最小绿灯时长
+
+public:
+	bool priority_Right;                                       //相位优先权
+	double intial_Demand = 0.0;
 	int phase_Id;
 	Signal_Phase_Info phase_Info;
+	vector<Lane_Index> phase_Lanes;
 };
 
-struct Stage_Node {                                             //相序嵌套的邻接表类
+struct Stage_Node {                                            //相序嵌套的邻接表类
 public:
 	Stage_Node() {
 		next = nullptr;
@@ -291,17 +306,19 @@ public:
 struct Phase_Node {                                            //相序的链表节点
 public:
 	Phase_Node() {
-		next = nullptr;
+		next = nullptr; down = nullptr;
 	};
-	Phase_Node(int mphase_Id, bool mflag) :phase_Id(mphase_Id), barrier_Flag(mflag), next(nullptr) {};
+	Phase_Node(int mphase_Id, bool mflag) :phase_Id(mphase_Id), barrier_Flag(mflag), next(nullptr),down(nullptr) {};
 
 	int phase_Id;
 	bool barrier_Flag;
-	shared_ptr<Phase_Node> next;
+	shared_ptr<Phase_Node> next;                              //同环下一个相位
+	shared_ptr<Phase_Node> down;                              //同阶段相位
 };
 
 //决策树的节点类
 struct Tree_Stage_Node {
+public:
 	Tree_Stage_Node() {
 		left_Tree = nullptr; right_Tree = nullptr;
 	};
@@ -322,7 +339,6 @@ public:
 		get_Phases_Overlap_Info();
 		get_Phases_Sequence_Info();
 		get_Node_Index_Info();
-		get_Phases_Green_Time();
 	};
 	~Node_Adaptive_Control();
 public:
@@ -334,15 +350,17 @@ public:
 public:
 	void get_Phases_Overlap_Info();
 	void get_Phases_Sequence_Info();
-	void get_Phases_Green_Time();
+	void get_Phases_Green_Time(const shared_ptr<Phase_Node>& mphase_Sequence);
 	void update_Phase_Index_Info();
 	void modify_Cycle_Time();
 	void modify_Phase_Green_Time();
-	void phase_Delay_Caculation();
+	void phase_Delay_Caculation(const shared_ptr<Phase_Node>& head, int& moment_Of_Cycle, double& total_Delay);
 
 	Tree_Stage_Node* build_Tree();
-	void copy_Node(Tree_Stage_Node* target, Tree_Stage_Node* object);
+	void copy_Node(Tree_Stage_Node* target, const Tree_Stage_Node* object);
 	Tree_Stage_Node* copy_Tree();
+	void reverse_Phase_Overlap(const int phase_Id);                         //反转某一相位的嵌套相位的次序
+	double queue_Delay_Value(const int phase_Id);                           //某一相位的每个排队车辆清空时间单元
 
 private:
 	map<int, shared_ptr<Stage_Node>> phases_Overlap;                        //相序的嵌套矩阵
