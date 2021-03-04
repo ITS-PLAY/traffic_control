@@ -6,6 +6,7 @@
 #include <string>
 #include <chrono>
 #include <memory>
+#include <utility>            //swap,forward,move
 #include <float.h>           //定义无穷大
 #include <algorithm>         //max
 
@@ -107,10 +108,10 @@ public:
 	void get_Signal_Phase_Info();
 public:
 	int phase_Id;
-	bool priority_Right;
-	int green_Time;
-	int yellow_Time;
-	int all_Red_Time;
+	bool priority_Right = false;
+	int green_Time = 0;
+	int yellow_Time = 3;
+	int all_Red_Time = 0;
 public:
 	Signal_Controller_Info intersection_Signal_Controller;
 };
@@ -286,7 +287,7 @@ public:
 
 public:
 	bool priority_Right;                                       //相位优先权
-	double intial_Demand = 0.0;
+	double initial_Demand = 0.0;
 	int phase_Id;
 	Signal_Phase_Info phase_Info;
 	vector<Lane_Index> phase_Lanes;
@@ -322,6 +323,11 @@ public:
 	Tree_Stage_Node() {
 		left_Tree = nullptr; right_Tree = nullptr;
 	};
+	Tree_Stage_Node(int mring1_Phase, int mring2_Phase):ring1_Phase_Id(mring1_Phase), ring2_Phase_Id(mring2_Phase) {
+		left_Tree = nullptr; right_Tree = nullptr;
+		ring1_Phase_Info = Signal_Phase_Info(1, ring1_Phase_Id);
+		ring2_Phase_Info = Signal_Phase_Info(1, ring2_Phase_Id);
+	}
 	Signal_Phase_Info ring1_Phase_Info;
 	Signal_Phase_Info ring2_Phase_Info;
 	int ring1_Phase_Id;
@@ -350,51 +356,39 @@ public:
 public:
 	void get_Phases_Overlap_Info();
 	void get_Phases_Sequence_Info();
-	void get_Phases_Green_Time(const shared_ptr<Phase_Node>& mphase_Sequence);
-	void update_Phase_Index_Info();
-	void modify_Cycle_Time();
-	void modify_Phase_Green_Time();
+	void initial_Phases_Green_Time(const shared_ptr<Phase_Node>& mphase_Sequence, int& cycle_Time);
+	void update_Phase_Index_Info();                                                                                     //更新相位指标
+	void modify_Cycle_Time(shared_ptr<Phase_Node>& mphase_Sequence_Modified, double ratio, const int cycle_Time);       //调整周期长度，并初始化清空比例
 	void phase_Delay_Caculation(const shared_ptr<Phase_Node>& head, int& moment_Of_Cycle, double& total_Delay);
+	double queue_Delay_Value(const int phase_Id);                                                                       //某一相位的排队车辆清空时间
+	double cycle_Delay_Caculation(const int cycle_Time);                                                                //某一周期下最小延误值
 
-	Tree_Stage_Node* build_Tree();
+	Tree_Stage_Node* build_Tree(Tree_Stage_Node* head, const shared_ptr<Phase_Node>& mphase_Sequence, const shared_ptr<Stage_Node>& mstage_Overlap);
+	vector<shared_ptr<Phase_Node>> tree_Phase_Sequence(Tree_Stage_Node* head);                                          //根据决策树输出可行的相序
 	void copy_Node(Tree_Stage_Node* target, const Tree_Stage_Node* object);
 	Tree_Stage_Node* copy_Tree();
-	void reverse_Phase_Overlap(const int phase_Id);                         //反转某一相位的嵌套相位的次序
-	double queue_Delay_Value(const int phase_Id);                           //某一相位的每个排队车辆清空时间单元
+	void modify_Phase_Green_Time(Tree_Stage_Node* head, double& totol_Delay);                                            //相位绿灯时长的优化
+	void reverse_Phase_Overlap(const int phase_Id);                                                                      //反转某一相位的嵌套相位的次序
+
 
 private:
 	map<int, shared_ptr<Stage_Node>> phases_Overlap;                        //相序的嵌套矩阵
 	vector<shared_ptr<Phase_Node>> phases_Sequence;                         //相序的可行空间
+	vector<shared_ptr<Phase_Node>> phases_Sequence_Modified;                //根据可行空间和嵌套矩阵，修改后的相序
 	map<int, Phase_Index> phases_Index;                                     //相位的指标，包含清空比例
 
-	int cycle_Time_Upper = 30;                                              //周期的最大值
-	int cycle_Time_Lower = 180;                                             //周期的最小值
+	int cycle_Time_Upper = 180;                                              //周期的最大值
+	int cycle_Time_Lower = 30;                                              //周期的最小值
 	double min_Delay = FLT_MAX;
 	int time_Interval = 5;                                                  //动态指标的统计间隔 
 	double stage_Volume_Diff = 0.1;                                         //嵌套相位下对称交通流量的阈值
+	int delta_Green = 2;                                                    //绿灯时间的优化步长
 
 public:
 	Node_Index node_Index;                                                   //交叉口的动态指标
-	Tree_Stage_Node* head;                                                  //决策树根结点
+	Tree_Stage_Node* optimal_Head;                                           //决策树根结点
 	Phase_Node* optimal_Phase_Sequence;                                     //最优相序的链表头
 	int optimal_Cycle_Time;                                                 //最优的周期时长
 };
 
 void traffic_Control_Integration(Node_Control_Strategy *node_control, int nodeId);
-
-//交通控制算法
-//1)相序嵌套矩阵，由邻接表建立
-
-//2)当前相位下，车道流量和车道排队车辆的更新
-
-//3)相位时长初始化
-//车道流量、车道排队长度，数据源为毫米波雷达（已由MEC处理，暂存MySQL），车道控制信息按照SPAT获取
-
-//4)周期时长调整
-
-//5)延误计算
-//车道流量、车道排队长度、车道通行能力已有
-
-//6)相位时长优化
-
-
