@@ -258,15 +258,12 @@ public:
 class Phase_Index {
 public:
 	Phase_Index() {};
-	Phase_Index(int mphase_Id, double mphase_Ratio):phase_Id(mphase_Id), phase_Clearance_Ratio(mphase_Ratio){
-		//TODO: 如何通过Lane_Index，计算Phase_Index的指标(多个车道取最大值等集计操作）
-		initial_Green_Time_Caculation();
-		initial_Demand_Caculation();
-		Pedestrian_Time_Caculation();
-	};
+	Phase_Index(int mphase_Id, double mphase_Ratio):phase_Id(mphase_Id), phase_Clearance_Ratio(mphase_Ratio){};
+
 	void initial_Demand_Caculation();
 	void Pedestrian_Time_Caculation();
 	void initial_Green_Time_Caculation();
+
 public:
 	int volume_Interval = 0;
 	int volume = 0;
@@ -347,6 +344,7 @@ public:
 		get_Phases_Overlap_Info();
 		get_Phases_Sequence_Info();
 		get_Node_Index_Info();
+		get_Phases_Index_Info();
 	};
 	~Node_Adaptive_Control();
 public:
@@ -359,6 +357,7 @@ public:
 	void get_Phases_Overlap_Info();
 	void get_Phases_Sequence_Info();
 	void initial_Phases_Green_Time(const shared_ptr<Phase_Node>& mphase_Sequence, int& cycle_Time);
+	void get_Phases_Index_Info();                                                                                                                     //从Lane_Index中计算Phase_Index
 	void update_Phase_Index_Info();                                                                                                                  //更新相位指标
 	void modify_Cycle_Time(shared_ptr<Phase_Node>& mphase_Sequence_Modified, double ratio, const int cycle_Time);                                    //调整周期长度，并初始化清空比例
 	void phase_Delay_Caculation(const shared_ptr<Phase_Node>& head, int& moment_Of_Cycle, double& total_Delay);
@@ -372,6 +371,8 @@ public:
 	void reverse_Phase_Overlap(const int phase_Id);                                                                                                  //反转某一相位的嵌套相位的次序
 
 	map<int, Phase_Index> copy_Phases_Index() { return phases_Index; };
+	void delete_Tree_Node(Tree_Stage_Node* root);
+	void delete_Phase_Node(shared_ptr<Phase_Node> root);
 
 private:
 	map<int, shared_ptr<Stage_Node>> phases_Overlap;                        //相序的嵌套矩阵
@@ -389,7 +390,7 @@ private:
 public:
 	Node_Index node_Index;                                                   //交叉口的动态指标
 	Tree_Stage_Node* optimal_Head;                                           //决策树根结点
-	Phase_Node* optimal_Phase_Sequence;                                     //最优相序的链表头
+	shared_ptr<Phase_Node> optimal_Phase_Sequence;                                     //最优相序的链表头
 	map<int, Phase_Index> optimal_Phase_Scheme;                              //最优相位方案
 	int optimal_Cycle_Time;                                                 //最优的周期时长
 };

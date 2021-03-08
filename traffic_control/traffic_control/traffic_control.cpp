@@ -1,29 +1,91 @@
 #include "traffic_control.h"
 
 void Lane_Map::get_Lane_Map_Info() {
-	switch (laneId) {
-	case 1: maneuvers = vector<Maneuver>{ RightAllowed }; signal_Controller_Id = 1; phase_Id = 8; break;
+	switch (upstreamId) {
+	case 0:
+		switch (laneId) {
+		case 1: maneuvers = vector<Maneuver>{ RightAllowed }; signal_Controller_Id = 1; phase_Id = 8; break;
+		case 2:
+		case 3:
+		case 4: maneuvers = vector<Maneuver>{ StraightAllowed }; signal_Controller_Id = 1; phase_Id = 8; break;
+		case 5: maneuvers = vector<Maneuver>{ LeftAllowed }; signal_Controller_Id = 1; phase_Id = 7; break;
+		}
+		break;
 	case 2:
-	case 3:
-	case 4: maneuvers = vector<Maneuver>{ StraightAllowed }; signal_Controller_Id = 1; phase_Id = 8; break;
-	case 5: maneuvers = vector<Maneuver>{ LeftAllowed }; signal_Controller_Id = 1; phase_Id = 7; break;
+		switch (laneId) {
+		case 1: maneuvers = vector<Maneuver>{ RightAllowed }; signal_Controller_Id = 1; phase_Id = 2; break;
+		case 2:
+		case 3: maneuvers = vector<Maneuver>{ StraightAllowed }; signal_Controller_Id = 1; phase_Id = 2; break;
+		case 4: maneuvers = vector<Maneuver>{ LeftAllowed }; signal_Controller_Id = 1; phase_Id = 1; break;
+		}
+		break;
+	case 4:
+		switch (laneId) {
+		case 1: maneuvers = vector<Maneuver>{ RightAllowed }; signal_Controller_Id = 1; phase_Id = 4; break;
+		case 2:
+		case 3:
+		case 4: maneuvers = vector<Maneuver>{ StraightAllowed }; signal_Controller_Id = 1; phase_Id = 4; break;
+		case 5: maneuvers = vector<Maneuver>{ LeftAllowed }; signal_Controller_Id = 1; phase_Id = 3; break;
+		}
+		break;
+	case 6:
+		switch (laneId) {
+		case 1: maneuvers = vector<Maneuver>{ RightAllowed }; signal_Controller_Id = 1; phase_Id = 6; break;
+		case 2: maneuvers = vector<Maneuver>{ StraightAllowed }; signal_Controller_Id = 1; phase_Id = 6; break;
+		case 3: maneuvers = vector<Maneuver>{ LeftAllowed }; signal_Controller_Id = 1; phase_Id = 5; break;
+		}
+		break;
 	}
 	return;
 }
 
 void Lane_Index::get_Lane_Volume_Info() {
-	switch (laneId) {
-	case 1: volume_Interval = 20; volume = volume_Interval * 12; capacity_Saturation = 1450; break;
+	switch (upstreamId) {
+	case 0:
+		switch (laneId) {
+		case 1: volume_Interval = 20; volume = volume_Interval * 12; capacity_Saturation = 1450; break;
+		case 2:
+		case 3:
+		case 4: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1650; break;
+		case 5: volume_Interval = 50; volume = volume_Interval * 12; capacity_Saturation = 1550; break;
+		}
+		break;
 	case 2:
-	case 3:
-	case 4: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1650; break;
-	case 5: volume_Interval = 50; volume = volume_Interval * 12; capacity_Saturation = 1550; break;
+		switch (laneId) {
+		case 1: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1450; break;
+		case 2:
+		case 3: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1650; break;
+		case 4: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1550; break;
+		}
+		break;
+	case 4:
+		switch (laneId) {
+		case 1: volume_Interval = 20; volume = volume_Interval * 12; capacity_Saturation = 1450; break;
+		case 2:
+		case 3:
+		case 4: volume_Interval = 15; volume = volume_Interval * 12; capacity_Saturation = 1650; break;
+		case 5: volume_Interval = 20; volume = volume_Interval * 12; capacity_Saturation = 1550; break;
+		}
+		break;
+	case 6:
+		switch (laneId) {
+		case 1: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1450; break;
+		case 2: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1650; break;
+		case 3: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1550; break;
+		}
+		break;
 	}
 	return;
 }
 
 void Signal_Phase_Info::get_Signal_Phase_Info() {
 	switch (phase_Id) {
+	case 1: green_Time = 20; yellow_Time = 3; break;
+	case 2: green_Time = 34; yellow_Time = 3; break;
+	case 3: green_Time = 20; yellow_Time = 3; break;
+	case 4: green_Time = 34; yellow_Time = 3; break;
+	case 5: green_Time = 20; yellow_Time = 3; break;
+	case 6: green_Time = 34; yellow_Time = 3; break;
 	case 7: green_Time = 20; yellow_Time = 3; break;
 	case 8: green_Time = 34; yellow_Time = 3; break;
 	}
@@ -108,6 +170,9 @@ void Link_Index::movements_Index_Caculation() {
 
 void Node_Map::get_Node_Map_Info() {
 	upstream_Nodes.emplace_back(0);        //上游节点为北方向交叉口0,当前节点ID为1
+	upstream_Nodes.emplace_back(2);        //上游节点为东方向交叉口2
+	upstream_Nodes.emplace_back(4);        //上游节点为南方向交叉口4
+	upstream_Nodes.emplace_back(6);        //上游节点为西方向交叉口6
 	return;
 }
 

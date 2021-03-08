@@ -63,6 +63,7 @@ bool Node_Variable_Lane_Control::modify_Movements_Index(int laneId) {           
 }
 
 void Node_Variable_Lane_Control::update_Node_Index_Info() {
+	entrance_Link_Index.lanes.clear();
 	entrance_Link_Index.lanes_Index.clear();
 	entrance_Link_Index.link_Movements_Index.clear();
 	return;
