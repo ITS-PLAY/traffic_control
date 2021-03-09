@@ -13,7 +13,7 @@
 using namespace std;
 using namespace std::chrono;
 
-static const int Time_Interval = 5;                            //时间间隔
+constexpr int Time_Interval = 5;                            //时间间隔
 using Maneuver = enum { StraightAllowed = 0, LeftAllowed, RightAllowed, UTurnAllowed, LeftTurnOnRedAllowed, RightTurnOnRedAllowed, LaneChangeAllowed, 
                         NoStoppingAllowed, YieldAllwaysRequired, GoWithHalt, Caution, Reserved };
 using Turn_Type = enum { Straight = 11, Left = 12, Right = 13, StraightLeft = 21, StraightRight = 22, LeftRight = 23, All = 24, UTurn = 31 };
@@ -21,8 +21,9 @@ using Lane_Type = enum {};
 using Light_State = enum {};
 using Intersection_Status_Object = enum {};
 
-static const double turn_Saturation_Limit = 0.8;               //饱和流率的阈值
-static const double turn_Change_Limit = 0.4;                   //车道切换后的饱和流率差值的阈值
+static const map<string, double> car_Delay_Ratio = { {"small",1.0},{"medium",1.0},{"large",1.0},{"train",1.0},{"transit",2.5} };          //车型延迟系数
+constexpr double turn_Saturation_Limit = 0.8;               //饱和流率的阈值
+constexpr double turn_Change_Limit = 0.4;                   //车道切换后的饱和流率差值的阈值
 
 struct Point {
 	double latitude;
@@ -161,6 +162,7 @@ public:
 	int transit_Car_Volume = 0;
 	double queue_Length = 0.0;
 	int queue_Num = 0;
+	int queue_Transit = 0;
 	double time_Headway_Saturation = 0.0;
 	int capacity_Saturation = 0;
 	int capacity_Intersection = 0;
@@ -274,6 +276,7 @@ public:
 	int transit_Car_Volume = 0;
 	double queue_Length = 0.0;
 	int queue_Num = 0;
+	int queue_Transit = 0;
 	double time_Headway_Saturation = 0.0;
 	int capacity_Saturation = 0;
 	int capacity_Intersection = 0;
@@ -372,7 +375,6 @@ public:
 
 	map<int, Phase_Index> copy_Phases_Index() { return phases_Index; };
 	void delete_Tree_Node(Tree_Stage_Node* root);
-	void delete_Phase_Node(shared_ptr<Phase_Node> root);
 
 private:
 	map<int, shared_ptr<Stage_Node>> phases_Overlap;                        //相序的嵌套矩阵

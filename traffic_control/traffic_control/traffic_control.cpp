@@ -177,6 +177,7 @@ void Node_Map::get_Node_Map_Info() {
 }
 
 void traffic_Control_Integration(Node_Control_Strategy* node_control, int nodeId) {
+	using second_Clock_Type = time_point<system_clock, seconds>;
 	if (typeid(*node_control) == typeid(Node_Variable_Lane_Control)) {                                                                                  //执行可变车道控制
 		Node_Map node = Node_Map(nodeId);
 		vector<Node_Variable_Lane_Control> variable_Lanes;
@@ -187,7 +188,6 @@ void traffic_Control_Integration(Node_Control_Strategy* node_control, int nodeId
 		}
 		while (true) {
 			int cycle_Time = variable_Lanes[0].entrance_Link_Index.lanes_Index[1].lane_Phase_Info.intersection_Signal_Controller.signal_Cycle_Time;
-			using second_Clock_Type = time_point<system_clock, seconds>;
 			second_Clock_Type current_Time = time_point_cast<seconds>(system_clock::now());
 			if ((current_Time.time_since_epoch().count() % cycle_Time) != 0) {                                                                          //当前时间是否位于周期的结束时刻
 				continue;
@@ -197,6 +197,18 @@ void traffic_Control_Integration(Node_Control_Strategy* node_control, int nodeId
 				variable_Lanes[i].update_Node_Index_Info();
 				variable_Lanes[i].get_Node_Index_Info();
 				variable_Lanes[i].implement_Node_Control_Function();
+			}
+		}
+	}
+
+	if (typeid(*node_control) == typeid(Node_Adaptive_Control)) {                                                                                      //执行自适应控制
+		Node_Adaptive_Control adaptive_Control = Node_Adaptive_Control(1);
+		while (true) {
+			second_Clock_Type current_Time = time_point_cast<seconds>(system_clock::now());
+			if ((current_Time.time_since_epoch().count() % Time_Interval) == 0) {
+				adaptive_Control.update_Node_Index_Info();
+				adaptive_Control.get_Node_Index_Info();
+				adaptive_Control.implement_Node_Control_Function();
 			}
 		}
 	}

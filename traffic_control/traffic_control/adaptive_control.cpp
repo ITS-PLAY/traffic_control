@@ -13,8 +13,10 @@ void Phase_Index::initial_Green_Time_Caculation() {
 		train_Car_Volume += phase_Lanes[i].train_Car_Volume;
 		if (phase_Lanes[i].queue_Length > queue_Length)
 			queue_Length = phase_Lanes[i].queue_Length;
-		if (phase_Lanes[i].queue_Num > queue_Num)
+		if (phase_Lanes[i].queue_Num > queue_Num) {
 			queue_Num = phase_Lanes[i].queue_Num;
+			queue_Transit = phase_Lanes[i].queue_Transit;
+		}	
 		time_Headway_Saturation += phase_Lanes[i].time_Headway_Saturation/num;
 		capacity_Saturation += phase_Lanes[i].capacity_Saturation;
 		capacity_Intersection += phase_Lanes[i].capacity_Intersection;
@@ -35,20 +37,21 @@ inline void Phase_Index::Pedestrian_Time_Caculation() {
 	return;
 }
 
-inline void Phase_Index::initial_Demand_Caculation() {             //TODO:ÊÇ·ñÌí¼Óphase_Clearance_RatioÉÏÏŞÎª1.0µÄÔ¼Êø
-	initial_Demand = phase_Clearance_Ratio * (1.0F * volume_Interval / Time_Interval * phase_Info.intersection_Signal_Controller.signal_Cycle_Time + queue_Num);
+inline void Phase_Index::initial_Demand_Caculation() {             
+	initial_Demand = max(phase_Clearance_Ratio * (1.0F * volume_Interval / Time_Interval * phase_Info.intersection_Signal_Controller.signal_Cycle_Time + queue_Num), 1.0);       //Ã¿Ò»ÏàÎ»µÄinitial_DemandÖÁÉÙÉèÖÃÒ»Á¾³µ
 	return;
 }
 
 double Node_Adaptive_Control::queue_Delay_Value(const int phase_Id) {
 	int temp = phases_Index[phase_Id].queue_Num  - phases_Index[phase_Id].capacity_Intersection;
+	double ratio = ((phases_Index[phase_Id].queue_Num - phases_Index[phase_Id].queue_Transit) + phases_Index[phase_Id].queue_Transit * car_Delay_Ratio.at("transit")) / phases_Index[phase_Id].queue_Num;                //ÅÅ¶Ó³µÁ¾µÄÆ½¾ùÑÓÎó»»ËãÏµÊı
 	if (temp <= 0)
-		return phases_Index[phase_Id].queue_Num * phases_Index[phase_Id].time_Headway_Saturation;
+		return ratio * phases_Index[phase_Id].queue_Num  * phases_Index[phase_Id].time_Headway_Saturation;
 	else
-		return phases_Index[phase_Id].capacity_Intersection * phases_Index[phase_Id].time_Headway_Saturation + temp * static_cast<double>(phases_Index[phase_Id].phase_Info.green_Time);
+		return ratio * (phases_Index[phase_Id].capacity_Intersection * phases_Index[phase_Id].time_Headway_Saturation + temp * static_cast<double>(phases_Index[phase_Id].phase_Info.green_Time));
 }
 
-void Node_Adaptive_Control::get_Phases_Overlap_Info() {    //¹Ì¶¨ÏàĞòÏÂµÄÏàÎ»Ç¶Ì××éºÏ
+void Node_Adaptive_Control::get_Phases_Overlap_Info() {             //¹Ì¶¨ÏàĞòÏÂµÄÏàÎ»Ç¶Ì××éºÏ
 	shared_ptr<Stage_Node> phase1 (new Stage_Node(1));
 	phase1->next = make_shared<Stage_Node>(Stage_Node(5));
 	//phase1->next->next = make_shared<Stage_Node>(Stage_Node(2));
@@ -65,18 +68,30 @@ void Node_Adaptive_Control::get_Phases_Overlap_Info() {    //¹Ì¶¨ÏàĞòÏÂµÄÏàÎ»Ç¶Ì
 	shared_ptr<Stage_Node> phase8 (new Stage_Node(8));
 	phase8->next = make_shared<Stage_Node>(Stage_Node(4));
 	phases_Overlap.emplace(8, phase8);
-
 	return;
 }
 
-void Node_Adaptive_Control::get_Phases_Sequence_Info() {      //Ö´ĞĞ¹Ì¶¨µÄÏàĞò,                                        TODO:Ìí¼ÓÍ¬½×¶ÎµÄÏàÎ»£¬Ìí¼ÓÄ¬ÈÏµÄ0ÏàÎ»
+void Node_Adaptive_Control::get_Phases_Sequence_Info() {            //Ö´ĞĞ¹Ì¶¨µÄÏàĞò,                                        
+	shared_ptr<Phase_Node> phase0(new Phase_Node(0, false));        //Ä¬ÈÏµÄ0ÏàÎ»
+
 	shared_ptr<Phase_Node> phase1 (new Phase_Node(1, false));
 	shared_ptr<Phase_Node> phase6 (new Phase_Node(6, true));
+	shared_ptr<Phase_Node> phase5(new Phase_Node(5, false));
 	phase1->next = phase6;
+	phase1->down = phase5;
+
 	shared_ptr<Phase_Node> phase3 (new Phase_Node(3, false));
+	shared_ptr<Phase_Node> phase2(new Phase_Node(2, true));
 	phase6->next = phase3;
+	phase6->down = phase2;
+
 	shared_ptr<Phase_Node> phase8 (new Phase_Node(8, true));
+	shared_ptr<Phase_Node> phase7(new Phase_Node(7, false));
 	phase3->next = phase8;
+	phase3->down = phase7;
+
+	shared_ptr<Phase_Node> phase4(new Phase_Node(4, false));
+	phase8->down = phase4;
 
 	phases_Sequence.emplace_back(phase1);
 	return;
@@ -94,7 +109,7 @@ void Node_Adaptive_Control::get_Phases_Index_Info() {
 	for (auto it_link = node_Index.entrance_Links_Index.begin(); it_link != node_Index.entrance_Links_Index.end(); it_link++) {    
 		map<int, Lane_Index> lanes_temp = it_link->second.lanes_Index;
 		for (auto it_lane = lanes_temp.begin(); it_lane != lanes_temp.end(); it_lane++) {
-			phases_Index[it_lane->second.phase_Id].phase_Lanes.emplace_back(it_lane->second);                                 //½«³µµÀÖ¸±êºÍÏàÎ»·Ö±ğ´æÈëÏàÎ»µÄ³µµÀ¼¯ºÏºÍÏàÎ»±äÁ¿ÖĞ
+			phases_Index[it_lane->second.phase_Id].phase_Lanes.emplace_back(it_lane->second);                                 //½«³µµÀµÄÖ¸±ê¡¢ÏàÎ»ĞÅÏ¢·Ö±ğ´æÈëÏàÎ»µÄ³µµÀ¼¯ºÏºÍÏàÎ»±äÁ¿ÖĞ
 			phases_Index[it_lane->second.phase_Id].phase_Info = it_lane->second.lane_Phase_Info;                              
 		}
 	}
@@ -179,22 +194,21 @@ void Node_Adaptive_Control::update_Phase_Index_Info() {
 	return;
 }
 
-void Node_Adaptive_Control::phase_Delay_Caculation(const shared_ptr<Phase_Node>& head, int& moment_Of_Cycle, double& total_Delay) {
-	if (&head == nullptr)                                                                                                                                                                //TODO:¿ÕÓ¦ÓÃµÄºÏ·¨ĞÔ
+void Node_Adaptive_Control::phase_Delay_Caculation(const shared_ptr<Phase_Node>& head, int& moment_Of_Cycle, double& total_Delay) { 
+	if (&head == nullptr)                                                                                                                       
 		return;
-	total_Delay += phases_Index[head->phase_Id].delay_Vehicles_Start + phases_Index[head->down->phase_Id].delay_Vehicles_Start;                //³µÁ¾Æô¶¯ÑÓÎó
+	total_Delay += phases_Index[head->phase_Id].delay_Vehicles_Start;                                                                           //³µÁ¾Æô¶¯ÑÓÎó
 
-    phases_Index[head->phase_Id].delay_Queue_Clearance = queue_Delay_Value(head->phase_Id);                                                    //TODO£º¸ù¾İ³µÁ¾ÀàĞÍºÍÑÓÎóÏµÊı£¬¼ÆËãÑÓÎó
-    phases_Index[head->down->phase_Id].delay_Queue_Clearance = queue_Delay_Value(head->down->phase_Id); 
-	total_Delay += phases_Index[head->phase_Id].delay_Queue_Clearance + phases_Index[head->down->phase_Id].delay_Queue_Clearance;              //³µÁ¾Çå¿ÕÑÓÎó
+    phases_Index[head->phase_Id].delay_Queue_Clearance = queue_Delay_Value(head->phase_Id);                                                      
+	total_Delay += phases_Index[head->phase_Id].delay_Queue_Clearance;                                                                          //³µÁ¾Çå¿ÕÑÓÎó,¸ù¾İ³µÁ¾ÀàĞÍºÍÑÓÎóÏµÊı£¬¼ÆËãÑÓÎó
 
-	phases_Index[head->phase_Id].delay_Red_Stop = phases_Index[head->phase_Id].initial_Demand * moment_Of_Cycle;
-	phases_Index[head->down->phase_Id].delay_Red_Stop = phases_Index[head->down->phase_Id].initial_Demand * moment_Of_Cycle;
-	total_Delay += phases_Index[head->phase_Id].delay_Red_Stop + phases_Index[head->down->phase_Id].delay_Red_Stop;                            //ºìµÆÍ£³µÑÓÎó
+	double ratio = ((phases_Index[head->phase_Id].queue_Num - phases_Index[head->phase_Id].queue_Transit) + phases_Index[head->phase_Id].queue_Transit * car_Delay_Ratio.at("transit")) / phases_Index[head->phase_Id].queue_Num;
+	phases_Index[head->phase_Id].delay_Red_Stop = ratio * phases_Index[head->phase_Id].initial_Demand * moment_Of_Cycle;
+	total_Delay += phases_Index[head->phase_Id].delay_Red_Stop;                                                                                 //ºìµÆÍ£³µÑÓÎó
 
+	phase_Delay_Caculation(head->down, moment_Of_Cycle, total_Delay);       
 	moment_Of_Cycle += phases_Index[head->phase_Id].phase_Info.green_Time + phases_Index[head->phase_Id].phase_Info.yellow_Time;
-	phase_Delay_Caculation(head->down, moment_Of_Cycle, total_Delay);                                                                          
-	phase_Delay_Caculation(head->next, moment_Of_Cycle, total_Delay);                                                                          //µİ¹é¼ÆËãËùÓĞÏàÎ»µÄÑÓÎó
+	phase_Delay_Caculation(head->next, moment_Of_Cycle, total_Delay);                                                                           //µİ¹é¼ÆËãËùÓĞÏàÎ»µÄÑÓÎó
 	return;
 }
 
@@ -318,7 +332,7 @@ double Node_Adaptive_Control::cycle_Delay_Caculation(const int cycle_Time) {
 	return total_Delay;
 }
 
-void Node_Adaptive_Control::implement_Node_Control_Function() {                //TODO:Ã¿Ò»ÏàÎ»µÄinitial_DemandÖÁÉÙÉèÖÃÒ»Á¾³µ
+void Node_Adaptive_Control::implement_Node_Control_Function() {               
 	if (cycle_Time_Lower == cycle_Time_Upper) {
 		min_Delay = cycle_Delay_Caculation(cycle_Time_Lower);
 		optimal_Cycle_Time = cycle_Time_Lower;
@@ -373,7 +387,7 @@ void Node_Adaptive_Control::update_Node_Index_Info() {
 	phases_Index.clear();
 	get_Phases_Index_Info();                                                                                    //¸üĞÂ½»²æ¿ÚËùÓĞÏàÎ»µÄĞÅÏ¢phases_Index
 
-	//TODO:¶ş²æÊ÷optimal_HeadºÍoptimal_Phase_SequenceµÄÉ¾³ı²Ù×÷
+	delete_Tree_Node(optimal_Head);
 	return;
 }
 
