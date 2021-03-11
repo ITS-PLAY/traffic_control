@@ -13,7 +13,7 @@
 using namespace std;
 using namespace std::chrono;
 
-constexpr int Time_Interval = 5;                            //时间间隔
+constexpr int Time_Interval = 1;                            //时间间隔,以秒为单位
 using Maneuver = enum { StraightAllowed = 0, LeftAllowed, RightAllowed, UTurnAllowed, LeftTurnOnRedAllowed, RightTurnOnRedAllowed, LaneChangeAllowed, 
                         NoStoppingAllowed, YieldAllwaysRequired, GoWithHalt, Caution, Reserved };
 using Turn_Type = enum { Straight = 11, Left = 12, Right = 13, StraightLeft = 21, StraightRight = 22, LeftRight = 23, All = 24, UTurn = 31 };
@@ -236,7 +236,7 @@ public:
 	virtual void update_Node_Index_Info() = 0;
 };
 
-class Node_Variable_Lane_Control:public Node_Control_Strategy,public Link_Index{      //可变导向车道的控制类
+class Node_Variable_Lane_Control:public Node_Control_Strategy{      //可变导向车道的控制类
 public:
 	Node_Variable_Lane_Control() {};
 	Node_Variable_Lane_Control(int mupstreamId,int mnodeId){
@@ -340,14 +340,12 @@ public:
 };
 
 //决策树模型类-控制类
-class Node_Adaptive_Control :public Node_Control_Strategy, public Node_Index {             //交叉口自适应控制的控制类
+class Node_Adaptive_Control :public Node_Control_Strategy{             //交叉口自适应控制的控制类
 public:
 	Node_Adaptive_Control() {};
-	Node_Adaptive_Control(int mnodeId):Node_Index(mnodeId) {
+	Node_Adaptive_Control(int mnodeId):node_Index(Node_Index(mnodeId)) {
 		get_Phases_Overlap_Info();
-		get_Phases_Sequence_Info();
-		get_Node_Index_Info();
-		get_Phases_Index_Info();
+		get_Phases_Sequence_Info();	
 	};
 	~Node_Adaptive_Control();
 public:
@@ -359,7 +357,7 @@ public:
 public:
 	void get_Phases_Overlap_Info();
 	void get_Phases_Sequence_Info();
-	void initial_Phases_Green_Time(const shared_ptr<Phase_Node>& mphase_Sequence, int& cycle_Time);
+	void initial_Phases_Green_Time(const shared_ptr<Phase_Node>& mphase_Sequence, shared_ptr<Phase_Node>& mphase_Sequence_Modified, int& cycle_Time);
 	void get_Phases_Index_Info();                                                                                                                     //从Lane_Index中计算Phase_Index
 	void update_Phase_Index_Info();                                                                                                                  //更新相位指标
 	void modify_Cycle_Time(shared_ptr<Phase_Node>& mphase_Sequence_Modified, double ratio, const int cycle_Time);                                    //调整周期长度，并初始化清空比例
@@ -373,8 +371,8 @@ public:
 	void modify_Phase_Green_Time(Tree_Stage_Node* head, double& totol_Delay);                                                                        //相位绿灯时长的优化
 	void reverse_Phase_Overlap(const int phase_Id);                                                                                                  //反转某一相位的嵌套相位的次序
 
-	map<int, Phase_Index> copy_Phases_Index() { return phases_Index; };
-	void delete_Tree_Node(Tree_Stage_Node* root);
+	map<int, Phase_Index> copy_Phases_Index() { return phases_Index; };                                                                              //备份phases_Index
+	void delete_Tree_Node(Tree_Stage_Node* root);                                                                                                    //删除二叉树的内存空间
 
 private:
 	map<int, shared_ptr<Stage_Node>> phases_Overlap;                        //相序的嵌套矩阵
@@ -392,9 +390,9 @@ private:
 public:
 	Node_Index node_Index;                                                   //交叉口的动态指标
 	Tree_Stage_Node* optimal_Head;                                           //决策树根结点
-	shared_ptr<Phase_Node> optimal_Phase_Sequence;                                     //最优相序的链表头
+	shared_ptr<Phase_Node> optimal_Phase_Sequence;                           //最优相序的链表头
 	map<int, Phase_Index> optimal_Phase_Scheme;                              //最优相位方案
-	int optimal_Cycle_Time;                                                 //最优的周期时长
+	int optimal_Cycle_Time;                                                  //最优的周期时长
 };
 
 void traffic_Control_Integration(Node_Control_Strategy *node_control, int nodeId);

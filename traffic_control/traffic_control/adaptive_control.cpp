@@ -1,5 +1,4 @@
 #include "traffic_control.h"
-
 using namespace std;
 
 void Phase_Index::initial_Green_Time_Caculation() {
@@ -94,14 +93,17 @@ void Node_Adaptive_Control::get_Phases_Sequence_Info() {            //执行固定的
 	phase8->down = phase4;
 
 	phases_Sequence.emplace_back(phase1);
+
+	phases_Sequence_Modified.resize(phases_Sequence.size());
 	return;
 }
 
 void Node_Adaptive_Control::get_Node_Index_Info() {
-	entrance_Links_Index.emplace(0,Link_Index(0, 1));
-	entrance_Links_Index.emplace(2,Link_Index(2, 1));
-	entrance_Links_Index.emplace(4,Link_Index(4, 1));
-	entrance_Links_Index.emplace(6,Link_Index(6, 1));
+	node_Index.entrance_Links_Index.emplace(0,Link_Index(0, 1));
+	node_Index.entrance_Links_Index.emplace(2,Link_Index(2, 1));
+	node_Index.entrance_Links_Index.emplace(4,Link_Index(4, 1));
+	node_Index.entrance_Links_Index.emplace(6,Link_Index(6, 1));
+	get_Phases_Index_Info();                                                                                    //更新交叉口所有相位的信息phases_Index
 	return;
 }
 
@@ -121,8 +123,7 @@ void Node_Adaptive_Control::get_Phases_Index_Info() {
 	return;
 }
 
-void Node_Adaptive_Control::initial_Phases_Green_Time(const shared_ptr<Phase_Node>& mphase_Sequence, int& cycle_Time) {                      //给定数据、相序、周期时长等，计算绿灯初始化值
-	//TODO:将相序添加到phases_Sequence_Modified容器中
+void Node_Adaptive_Control::initial_Phases_Green_Time(const shared_ptr<Phase_Node>& mphase_Sequence, shared_ptr<Phase_Node>& mphase_Sequence_Modified, int& cycle_Time) {                      //给定数据、相序、周期时长等，计算绿灯初始化值
 	shared_ptr<Phase_Node> phase_Head = mphase_Sequence;
 	while (phase_Head) {
 		int ring1_phase = phase_Head->phase_Id;                                                       //环1的相位编号
@@ -136,11 +137,17 @@ void Node_Adaptive_Control::initial_Phases_Green_Time(const shared_ptr<Phase_Nod
 				green_Time = static_cast<int>(max_volume * phases_Index[ring1_phase].time_Headway_Saturation);
 				phases_Index[ring1_phase].phase_Info.green_Time += green_Time;                       //环1的当前相位绿灯时长
 				phases_Index[ring2_phase].phase_Info.green_Time += green_Time;                       //环2的当前相位绿灯时长
+				mphase_Sequence_Modified = make_shared<Phase_Node>(ring1_phase);                     //将相序添加到phases_Sequence_Modified中
+				mphase_Sequence_Modified->next = make_shared<Phase_Node>(ring2_phase);
+				mphase_Sequence_Modified = mphase_Sequence_Modified->next;
 				break;
 			}
 			green_Time = static_cast<int>(min_volume * phases_Index[ring1_phase].time_Headway_Saturation);
 			phases_Index[ring1_phase].phase_Info.green_Time += green_Time;
 			phases_Index[ring2_phase].phase_Info.green_Time += green_Time;
+			mphase_Sequence_Modified = make_shared<Phase_Node>(ring1_phase);
+			mphase_Sequence_Modified->next = make_shared<Phase_Node>(ring2_phase);
+			mphase_Sequence_Modified = mphase_Sequence_Modified->next;
 
 			int ring_Num_Main = (phases_Index[ring1_phase].initial_Demand == min_volume) ? ring2_phase : ring1_phase;
 			phases_Index[ring_Num_Main].initial_Demand -= min_volume;                                //计算主要相位的剩余需求
@@ -213,7 +220,6 @@ void Node_Adaptive_Control::phase_Delay_Caculation(const shared_ptr<Phase_Node>&
 }
 
 Tree_Stage_Node* Node_Adaptive_Control::build_Tree(Tree_Stage_Node* head, const shared_ptr<Phase_Node>& mphase_Sequence, const shared_ptr<Stage_Node>& mstage_Overlap) {                     //除基本参数和初始化的清空比例外，相位参数一切归零，建立决策树
-	//TODO:添加mphase_Sequence_Modified的逻辑，用于存储完整的相序
 	if (!mphase_Sequence || !mstage_Overlap) 
 		return nullptr;
 	int ring1_phase = mphase_Sequence->phase_Id;
@@ -277,7 +283,7 @@ vector<shared_ptr<Phase_Node>> Node_Adaptive_Control::to_Phase_Node(const vector
 }
 
 void Node_Adaptive_Control::modify_Phase_Green_Time(Tree_Stage_Node* head, double& total_Delay) {                     
-	vector<vector<Tree_Stage_Node*>> tree_Phases_Set;                                                            //TODO:如何保存类中phases_Index的值
+	vector<vector<Tree_Stage_Node*>> tree_Phases_Set;                                                            
 	vector<Tree_Stage_Node*> tree_Node;
 	tree_Phase_Sequence(head, tree_Node, tree_Phases_Set);
 	vector<shared_ptr<Phase_Node>> phases_Set = to_Phase_Node(tree_Phases_Set);
@@ -298,8 +304,12 @@ void Node_Adaptive_Control::modify_Phase_Green_Time(Tree_Stage_Node* head, doubl
 					mphases_Index[backtrack_Head->phase_Id].phase_Info.green_Time += delta_Green;
 					mphases_Index[backtrack_Head->next->phase_Id].phase_Info.green_Time += delta_Green;
 
-					phase_Delay_Caculation(phases_Set[i], moment_Of_Cycle, total_Delay);                         //TODO:phase_Delay_Caculation可设置链表头和链表尾，计算某一段相序的延误
-
+					phase_Delay_Caculation(phases_Set[i], moment_Of_Cycle, total_Delay);                          //TODO:phase_Delay_Caculation可设置链表头和链表尾，计算某一段相序的延误
+					if (total_Delay < min_Delay) {                                                                
+						optimal_Phase_Sequence = phases_Set[i];                                                   //保存延误最小的相序和相位方案
+						optimal_Phase_Scheme = mphases_Index;
+					}
+					
 					mphases_Index[backtrack_Head->phase_Id].phase_Info.green_Time -= delta_Green;
 					mphases_Index[backtrack_Head->next->phase_Id].phase_Info.green_Time -= delta_Green;
 					backtrack_Head = backtrack_Head->next;
@@ -314,32 +324,38 @@ void Node_Adaptive_Control::modify_Phase_Green_Time(Tree_Stage_Node* head, doubl
 double Node_Adaptive_Control::cycle_Delay_Caculation(const int cycle_Time) {
 	double total_Delay = 0.0;
 	for (int i = 0; i < phases_Sequence.size(); i++) {
-		//TODO:将cycle_Time写入Phase_Index
 		Tree_Stage_Node* temp_Head;
 		int cycle_Time_Initial = 0;
-		initial_Phases_Green_Time(phases_Sequence[i], cycle_Time_Initial);
+		map<int, Phase_Index> phases_Index_Temp = copy_Phases_Index();                                                                 //回溯phases_Index
+
+		for (auto it = phases_Index.begin(); it != phases_Index.end(); it++) {                                                         //将cycle_Time写入Phase_Index
+			it->second.phase_Info.intersection_Signal_Controller.signal_Cycle_Time = cycle_Time;
+		}
+		initial_Phases_Green_Time(phases_Sequence[i], phases_Sequence_Modified[i], cycle_Time_Initial);                                
 
 		while (abs(cycle_Time_Initial - cycle_Time) >= 2)
-		    modify_Cycle_Time(phases_Sequence_Modified[i], static_cast<double>(cycle_Time / cycle_Time_Initial), cycle_Time);
+		    modify_Cycle_Time(phases_Sequence_Modified[i], static_cast<double>(cycle_Time / cycle_Time_Initial), cycle_Time);          //初始化相位的清空比例
 
 		int moment_Of_Cycle = 0;
-		phase_Delay_Caculation(phases_Sequence_Modified[i], moment_Of_Cycle, total_Delay);
+		phase_Delay_Caculation(phases_Sequence_Modified[i], moment_Of_Cycle, total_Delay);                                              
 
 		temp_Head = build_Tree(nullptr, phases_Sequence[i], phases_Overlap[phases_Sequence[i]->phase_Id]->next);                        //决策树的建立
 		total_Delay = 0.0;
 		modify_Phase_Green_Time(temp_Head,total_Delay);                                                                          		//相位时长优化
+
+		phases_Index = phases_Index_Temp;
 	}
 	return total_Delay;
 }
 
-void Node_Adaptive_Control::implement_Node_Control_Function() {               
+void Node_Adaptive_Control::implement_Node_Control_Function() {                                                             //TODO:相序中屏障的使用，环周期和屏障时刻的一致相等
 	if (cycle_Time_Lower == cycle_Time_Upper) {
-		min_Delay = cycle_Delay_Caculation(cycle_Time_Lower);
+		min_Delay = cycle_Delay_Caculation(cycle_Time_Lower);  
 		optimal_Cycle_Time = cycle_Time_Lower;
 		return;
 	}
 	int optimal_Lower = cycle_Time_Lower, optimal_Upper = cycle_Time_Lower + (cycle_Time_Upper - cycle_Time_Lower) / 2;
-	int suboptimal_Lower = optimal_Upper, suboptimal_Upper = cycle_Time_Upper;
+	int suboptimal_Lower = optimal_Upper, suboptimal_Upper = cycle_Time_Upper;                          //次优区间，减少陷入局部最优的几率
 	double total_Delay = 0.0;
 	int optimal_Cycle = 0;
 	while ((optimal_Upper - optimal_Lower) >= 2 ) {
@@ -359,7 +375,7 @@ void Node_Adaptive_Control::implement_Node_Control_Function() {
 			optimal_Lower = optimal_Mid;
 		}
 
-		if (cycle_Delay_Caculation(suboptimal_Lower) < cycle_Delay_Caculation(suboptimal_Upper)) {
+		if (cycle_Delay_Caculation(suboptimal_Lower) < cycle_Delay_Caculation(suboptimal_Upper)) {      //同步更新次优区间
 			suboptimal_Upper = suboptimal_Mid;
 		}else {
 			suboptimal_Lower = suboptimal_Mid;
@@ -377,7 +393,7 @@ void Node_Adaptive_Control::put_Control_Delivery() {
 	return;
 }
 void Node_Adaptive_Control::update_Node_Index_Info() {
-	for (auto it = entrance_Links_Index.begin(); it != entrance_Links_Index.end(); it++) {                      //暂时清空所有的结果，后续可优化变量的动态分配规则
+	for (auto it = node_Index.entrance_Links_Index.begin(); it != node_Index.entrance_Links_Index.end(); it++) {                      //暂时清空所有的结果，后续可优化变量的动态分配规则
 		it->second.lanes.clear();
 		it->second.lanes_Index.clear();
 		it->second.link_Movements_Index.clear();
@@ -385,7 +401,6 @@ void Node_Adaptive_Control::update_Node_Index_Info() {
 	}              
 	optimal_Phase_Scheme.clear();
 	phases_Index.clear();
-	get_Phases_Index_Info();                                                                                    //更新交叉口所有相位的信息phases_Index
 
 	delete_Tree_Node(optimal_Head);
 	return;

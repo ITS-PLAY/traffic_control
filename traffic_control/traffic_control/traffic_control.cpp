@@ -5,8 +5,8 @@ void Lane_Map::get_Lane_Map_Info() {
 	case 0:
 		switch (laneId) {
 		case 1: maneuvers = vector<Maneuver>{ RightAllowed }; signal_Controller_Id = 1; phase_Id = 8; break;
-		case 2:
-		case 3:
+		case 2: 
+		case 3: 
 		case 4: maneuvers = vector<Maneuver>{ StraightAllowed }; signal_Controller_Id = 1; phase_Id = 8; break;
 		case 5: maneuvers = vector<Maneuver>{ LeftAllowed }; signal_Controller_Id = 1; phase_Id = 7; break;
 		}
@@ -14,7 +14,7 @@ void Lane_Map::get_Lane_Map_Info() {
 	case 2:
 		switch (laneId) {
 		case 1: maneuvers = vector<Maneuver>{ RightAllowed }; signal_Controller_Id = 1; phase_Id = 2; break;
-		case 2:
+		case 2: 
 		case 3: maneuvers = vector<Maneuver>{ StraightAllowed }; signal_Controller_Id = 1; phase_Id = 2; break;
 		case 4: maneuvers = vector<Maneuver>{ LeftAllowed }; signal_Controller_Id = 1; phase_Id = 1; break;
 		}
@@ -113,7 +113,7 @@ void Link_Map::get_Link_Map_Info() {
 		lanes.emplace(1, Lane_Map(0, 1, 1));
 		break;
 	case 2:
-		lanes.emplace(4, Lane_Map(2, 1, 3));
+		lanes.emplace(4, Lane_Map(2, 1, 4));
 		lanes.emplace(3, Lane_Map(2, 1, 3));
 		lanes.emplace(2, Lane_Map(2, 1, 2));
 		lanes.emplace(1, Lane_Map(2, 1, 1));
@@ -206,9 +206,9 @@ void traffic_Control_Integration(Node_Control_Strategy* node_control, int nodeId
 		while (true) {
 			second_Clock_Type current_Time = time_point_cast<seconds>(system_clock::now());
 			if ((current_Time.time_since_epoch().count() % Time_Interval) == 0) {
-				adaptive_Control.update_Node_Index_Info();
-				adaptive_Control.get_Node_Index_Info();
+				adaptive_Control.get_Node_Index_Info(); 
 				adaptive_Control.implement_Node_Control_Function();
+				adaptive_Control.update_Node_Index_Info();
 			}
 		}
 	}
