@@ -13,7 +13,7 @@
 using namespace std;
 using namespace std::chrono;
 
-constexpr int Time_Interval = 1;                            //时间间隔,以秒为单位
+constexpr int Time_Interval = 2 * 60;                            //指标统计的时间间隔,以秒为单位
 using Maneuver = enum { StraightAllowed = 0, LeftAllowed, RightAllowed, UTurnAllowed, LeftTurnOnRedAllowed, RightTurnOnRedAllowed, LaneChangeAllowed, 
                         NoStoppingAllowed, YieldAllwaysRequired, GoWithHalt, Caution, Reserved };
 using Turn_Type = enum { Straight = 11, Left = 12, Right = 13, StraightLeft = 21, StraightRight = 22, LeftRight = 23, All = 24, UTurn = 31 };
@@ -96,7 +96,7 @@ public:
 public:
 	int signal_Controller_ID;
 	int signal_Cycle_Time;
-	int signal_Offset_Time;
+	int signal_Offset_Time = 0;
 };
 
 class Signal_Phase_Info {                                       //信号相位参数类
@@ -109,7 +109,6 @@ public:
 	void get_Signal_Phase_Info();
 public:
 	int phase_Id;
-	bool priority_Right = false;
 	int green_Time = 0;
 	int yellow_Time = 3;
 	int all_Red_Time = 0;
@@ -264,7 +263,7 @@ public:
 
 	void initial_Demand_Caculation();
 	void Pedestrian_Time_Caculation();
-	void initial_Green_Time_Caculation();
+	void initial_Phase_Index_Caculation();
 
 public:
 	int volume_Interval = 0;
@@ -284,10 +283,10 @@ public:
 	double delay_Red_Stop = 0.0;
 	double delay_Queue_Clearance = 0.0;
 	double phase_Clearance_Ratio = 1.0;                         //清空比例
-	double green_Time_Pedestrian = 0.0;                         //最小绿灯时长
+	double green_Time_Pedestrian = 15.0;                         //最小绿灯时长
 
 public:
-	bool priority_Right;                                       //相位优先权
+	bool priority_Right = false;                                       //相位优先权
 	double initial_Demand = 0.0;
 	int phase_Id;
 	Signal_Phase_Info phase_Info;
@@ -360,9 +359,10 @@ public:
 	void initial_Phases_Green_Time(const shared_ptr<Phase_Node>& mphase_Sequence, shared_ptr<Phase_Node>& mphase_Sequence_Modified, int& cycle_Time);
 	void get_Phases_Index_Info();                                                                                                                     //从Lane_Index中计算Phase_Index
 	void update_Phase_Index_Info();                                                                                                                  //更新相位指标
-	void modify_Cycle_Time(shared_ptr<Phase_Node>& mphase_Sequence_Modified, double ratio, const int cycle_Time);                                    //调整周期长度，并初始化清空比例
-	void phase_Delay_Caculation(const shared_ptr<Phase_Node>& head, int& moment_Of_Cycle, double& total_Delay);
+	void modify_Cycle_Time(shared_ptr<Phase_Node>& mphase_Sequence_Modified, const double ratio, const int cycle_Time);                                    //调整周期长度，并初始化清空比例
+	void phase_Delay_Caculation(const shared_ptr<Phase_Node> head, int& moment_Of_Cycle, double& total_Delay);
 	double queue_Delay_Value(const int phase_Id);                                                                                                    //某一相位的排队车辆清空时间
+	double red_Stop_Delay_Value(const int phase_Id, const int moment_Of_Cycle);                                                                                                 //某一相位的红灯停车等待时间
 	double cycle_Delay_Caculation(const int cycle_Time);                                                                                             //某一周期下最小延误值
 
 	Tree_Stage_Node* build_Tree(Tree_Stage_Node* head, const shared_ptr<Phase_Node>& mphase_Sequence, const shared_ptr<Stage_Node>& mstage_Overlap); //创建决策树

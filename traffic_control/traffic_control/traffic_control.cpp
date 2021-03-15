@@ -43,35 +43,35 @@ void Lane_Index::get_Lane_Volume_Info() {
 	switch (upstreamId) {
 	case 0:
 		switch (laneId) {
-		case 1: volume_Interval = 20; volume = volume_Interval * 12; capacity_Saturation = 1450; break;
+		case 1: volume_Interval = 20; volume = volume_Interval * 12; capacity_Saturation = 1450; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
 		case 2:
 		case 3:
-		case 4: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1650; break;
-		case 5: volume_Interval = 50; volume = volume_Interval * 12; capacity_Saturation = 1550; break;
+		case 4: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1650; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
+		case 5: volume_Interval = 50; volume = volume_Interval * 12; capacity_Saturation = 1550; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
 		}
 		break;
 	case 2:
 		switch (laneId) {
-		case 1: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1450; break;
+		case 1: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1450; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
 		case 2:
-		case 3: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1650; break;
-		case 4: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1550; break;
+		case 3: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1650; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
+		case 4: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1550; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
 		}
 		break;
 	case 4:
 		switch (laneId) {
-		case 1: volume_Interval = 20; volume = volume_Interval * 12; capacity_Saturation = 1450; break;
+		case 1: volume_Interval = 20; volume = volume_Interval * 12; capacity_Saturation = 1450; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
 		case 2:
 		case 3:
-		case 4: volume_Interval = 15; volume = volume_Interval * 12; capacity_Saturation = 1650; break;
-		case 5: volume_Interval = 20; volume = volume_Interval * 12; capacity_Saturation = 1550; break;
+		case 4: volume_Interval = 15; volume = volume_Interval * 12; capacity_Saturation = 1650; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
+		case 5: volume_Interval = 45; volume = volume_Interval * 12; capacity_Saturation = 1550; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
 		}
 		break;
 	case 6:
 		switch (laneId) {
-		case 1: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1450; break;
-		case 2: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1650; break;
-		case 3: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1550; break;
+		case 1: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1450; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
+		case 2: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1650; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
+		case 3: volume_Interval = 10; volume = volume_Interval * 12; capacity_Saturation = 1550; time_Headway_Saturation = 3600.0 / capacity_Saturation; break;
 		}
 		break;
 	}
@@ -205,11 +205,11 @@ void traffic_Control_Integration(Node_Control_Strategy* node_control, int nodeId
 		Node_Adaptive_Control adaptive_Control = Node_Adaptive_Control(1);
 		while (true) {
 			second_Clock_Type current_Time = time_point_cast<seconds>(system_clock::now());
-			if ((current_Time.time_since_epoch().count() % Time_Interval) == 0) {
+			//if ((current_Time.time_since_epoch().count() % Time_Interval) == 0) {
 				adaptive_Control.get_Node_Index_Info(); 
 				adaptive_Control.implement_Node_Control_Function();
 				adaptive_Control.update_Node_Index_Info();
-			}
+			//}
 		}
 	}
 
