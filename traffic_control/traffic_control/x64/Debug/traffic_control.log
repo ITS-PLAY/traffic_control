@@ -1,8 +1,3 @@
 ﻿  adaptive_control.cpp
 D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(233,64): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
-  test_main.cpp
-  traffic_control.cpp
-  variable_lane_control.cpp
-D:\traffic_control\traffic_control\traffic_control\variable_lane_control.cpp(59,160): warning C4244: “*=”: 从“double”转换到“int”，可能丢失数据
-  正在生成代码...
   traffic_control.vcxproj -> D:\traffic_control\traffic_control\x64\Debug\traffic_control.exe
