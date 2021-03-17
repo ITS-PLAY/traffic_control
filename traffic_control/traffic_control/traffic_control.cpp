@@ -188,28 +188,21 @@ void traffic_Control_Integration(Node_Control_Strategy* node_control, int nodeId
 		}
 		while (true) {
 			int cycle_Time = variable_Lanes[0].entrance_Link_Index.lanes_Index[1].lane_Phase_Info.intersection_Signal_Controller.signal_Cycle_Time;
+			using second_Clock_Type = time_point<system_clock, seconds>;
 			second_Clock_Type current_Time = time_point_cast<seconds>(system_clock::now());
-			if ((current_Time.time_since_epoch().count() % cycle_Time) != 0) {                                                                          //当前时间是否位于周期的结束时刻
-				continue;
-			}
+			time_t now_Time = system_clock::to_time_t(current_Time);
+			struct tm* now_Time_Norm;
+			now_Time_Norm = localtime(&now_Time);
+			printf("%d-%d-%d %d:%d:%d \n", 1900 + now_Time_Norm->tm_year, 1 + now_Time_Norm->tm_mon, now_Time_Norm->tm_mday, now_Time_Norm->tm_hour, now_Time_Norm->tm_min, now_Time_Norm->tm_sec);
+			//if ((current_Time.time_since_epoch().count() % cycle_Time) != 0) {                                                                       //当前时间是否位于周期的结束时刻
+			//	continue;
+			//}
 
 			for (int i = 0; i < variable_Lanes.size(); i++) {                                                                                           //每个进口道开始执行可变车道功能,先清空数据再获取新数据
 				variable_Lanes[i].update_Node_Index_Info();
 				variable_Lanes[i].get_Node_Index_Info();
 				variable_Lanes[i].implement_Node_Control_Function();
 			}
-		}
-	}
-
-	if (typeid(*node_control) == typeid(Node_Adaptive_Control)) {                                                                                      //执行自适应控制
-		Node_Adaptive_Control adaptive_Control = Node_Adaptive_Control(1);
-		while (true) {
-			second_Clock_Type current_Time = time_point_cast<seconds>(system_clock::now());
-			//if ((current_Time.time_since_epoch().count() % Time_Interval) == 0) {
-				adaptive_Control.get_Node_Index_Info(); 
-				adaptive_Control.implement_Node_Control_Function();
-				adaptive_Control.update_Node_Index_Info();
-			//}
 		}
 	}
 

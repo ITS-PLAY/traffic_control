@@ -21,9 +21,6 @@
     <ClCompile Include="variable_lane_control.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="adaptive_control.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="traffic_control.cpp">
       <Filter>源文件</Filter>
     </ClCompile>

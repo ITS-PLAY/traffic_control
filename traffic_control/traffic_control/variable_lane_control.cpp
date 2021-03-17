@@ -27,8 +27,7 @@ void Node_Variable_Lane_Control::implement_Node_Control_Function() {
 		if (flag) {                                                                                     
 			it->second = (it->second == Left) ? Straight : Left;
 			map_Iterative_Nums[it->first] = 0;
-		}                                                                   
-		else
+		}else
 			entrance_Link_Index.link_Movements_Index = temp;                                           //回溯转向流量
 		turn_Type_Nums[it->second]++;                                                                  //不同车道类型的计数
 	}
