@@ -368,20 +368,21 @@ public:
 	Tree_Stage_Node* build_Tree(Tree_Stage_Node* head, const shared_ptr<Phase_Node>& mphase_Sequence, const shared_ptr<Stage_Node>& mstage_Overlap); //创建决策树
 	void tree_Phase_Sequence(Tree_Stage_Node* head, vector<Tree_Stage_Node*>& tree_Node, vector<vector<Tree_Stage_Node*>>& tree_Phases_Set);         //输出决策树可行路径上的Tree_Stage_Node节点
 	vector<shared_ptr<Phase_Node>> to_Phase_Node(const vector<vector<Tree_Stage_Node*>>& tree_Phases_Set);                                           //将决策树可行路径上的Tree_Stage_Node节点转换为相序Phase_Node节点
-	void modify_Phase_Green_Time(Tree_Stage_Node* head, double& totol_Delay);                                                                        //相位绿灯时长的优化
+	void modify_Phase_Green_Time(Tree_Stage_Node* head, double& local_Min_Delay);                                                                    //相位绿灯时长的优化
 	void reverse_Phase_Overlap(const int phase_Id);                                                                                                  //反转某一相位的嵌套相位的次序
 
 	map<int, Phase_Index> copy_Phases_Index() { return phases_Index; };                                                                              //备份phases_Index
 	void delete_Tree_Node(Tree_Stage_Node* root);                                                                                                    //删除二叉树的内存空间
 
+	bool update_Optimal_Phases(const shared_ptr<Phase_Node>& mphase_Sequence, double& local_Min_Delay);                                                   //根据延误最小，更新最优相序和相位方案
 private:
 	map<int, shared_ptr<Stage_Node>> phases_Overlap;                        //相序的嵌套矩阵
 	vector<shared_ptr<Phase_Node>> phases_Sequence;                         //相序的可行空间
 	vector<shared_ptr<Phase_Node>> phases_Sequence_Modified;                //根据可行空间和嵌套矩阵，修改后的相序
 	map<int, Phase_Index> phases_Index;                                     //相位的指标，包含清空比例
 
-	int cycle_Time_Upper = 180;                                              //周期的最大值
-	int cycle_Time_Lower = 30;                                              //周期的最小值
+	int cycle_Time_Upper = 80;                                              //周期的最大值
+	int cycle_Time_Lower = 72;                                               //周期的最小值 60+4*3
 	double min_Delay = FLT_MAX;
 	int time_Interval = 5;                                                  //动态指标的统计间隔 
 	double stage_Volume_Diff = 0.1;                                         //嵌套相位下对称交通流量的阈值
