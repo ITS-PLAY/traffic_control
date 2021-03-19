@@ -394,7 +394,7 @@ double Node_Adaptive_Control::cycle_Delay_Caculation(const int cycle_Time) {
 		
 		temp_Head = build_Tree(nullptr, phases_Sequence[i], phases_Overlap[phases_Sequence[i]->phase_Id]->next);                        //决策树的建立
 
-		modify_Phase_Green_Time(temp_Head, local_Min_Delay);                                                                          		//相位时长优化
+		modify_Phase_Green_Time(temp_Head, local_Min_Delay);                                                                           //相位时长优化
 
 		phases_Index = phases_Index_Temp;
 	}
@@ -439,6 +439,7 @@ void Node_Adaptive_Control::put_Control_Delivery() {
 	
 	return;
 }
+
 void Node_Adaptive_Control::update_Node_Index_Info() {
 	for (auto it = node_Index.entrance_Links_Index.begin(); it != node_Index.entrance_Links_Index.end(); it++) {                      //暂时清空所有的结果，后续可优化变量的动态分配规则
 		it->second.lanes.clear();
