@@ -13,7 +13,7 @@
 using namespace std;
 using namespace std::chrono;
 
-constexpr int Time_Interval = 2 * 60;                            //指标统计的时间间隔,以秒为单位
+constexpr int Time_Interval = 5 * 60;                            //指标统计的时间间隔,以秒为单位
 using Maneuver = enum { StraightAllowed = 0, LeftAllowed, RightAllowed, UTurnAllowed, LeftTurnOnRedAllowed, RightTurnOnRedAllowed, LaneChangeAllowed, 
                         NoStoppingAllowed, YieldAllwaysRequired, GoWithHalt, Caution, Reserved };
 using Turn_Type = enum { Straight = 11, Left = 12, Right = 13, StraightLeft = 21, StraightRight = 22, LeftRight = 23, All = 24, UTurn = 31 };
@@ -22,6 +22,7 @@ using Light_State = enum {};
 using Intersection_Status_Object = enum {};
 
 static const map<string, double> car_Delay_Ratio = { {"small",1.0},{"medium",1.0},{"large",1.0},{"train",1.0},{"transit",2.5} };          //车型延迟系数
+static const map<string, double> car_Volume_Ratio = { {"small",1.0},{"medium",1.5},{"large",2.5},{"train",4.0},{"transit",2.5} };         //车型流量系数
 constexpr double turn_Saturation_Limit = 0.8;               //饱和流率的阈值
 constexpr double turn_Change_Limit = 0.4;                   //车道切换后的饱和流率差值的阈值
 

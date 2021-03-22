@@ -56,11 +56,15 @@ double Node_Adaptive_Control::queue_Delay_Value(const int phase_Id) {
 double Node_Adaptive_Control::red_Stop_Delay_Value(const int phase_Id, const int moment_Of_Cycle) {
 	double ratio = 1.0;
 	int green_Time_Effctive = phases_Index[phase_Id].phase_Info.green_Time + phases_Index[phase_Id].phase_Info.yellow_Time;                          //有效绿灯时长
-	if (phases_Index[phase_Id].queue_Num > 0)
-		ratio = ((phases_Index[phase_Id].queue_Num - phases_Index[phase_Id].queue_Transit) + phases_Index[phase_Id].queue_Transit * car_Delay_Ratio.at("transit")) / phases_Index[phase_Id].queue_Num;
-	printf("phase_Id: %d , queue_num: %f \n", phase_Id, phases_Index[phase_Id].initial_Demand * phases_Index[phase_Id].time_Headway_Saturation - phases_Index[phase_Id].phase_Info.green_Time);
-	return ratio * (phases_Index[phase_Id].initial_Demand * moment_Of_Cycle +
-		max(0.0, phases_Index[phase_Id].initial_Demand * phases_Index[phase_Id].time_Headway_Saturation - phases_Index[phase_Id].phase_Info.green_Time) * (phases_Index[phase_Id].phase_Info.intersection_Signal_Controller.signal_Cycle_Time - green_Time_Effctive));
+	if (phases_Index[phase_Id].volume_Interval > 0)
+		ratio = ((phases_Index[phase_Id].volume_Interval - phases_Index[phase_Id].transit_Car_Volume * car_Volume_Ratio.at("transit")) + phases_Index[phase_Id].transit_Car_Volume * car_Volume_Ratio.at("transit") * car_Delay_Ratio.at("transit")) / phases_Index[phase_Id].volume_Interval;
+	double actual_Queue_Num = phases_Index[phase_Id].initial_Demand / phases_Index[phase_Id].phase_Clearance_Ratio - (static_cast<double>(phases_Index[phase_Id].phase_Info.green_Time) - phases_Index[phase_Id].delay_Vehicles_Start) / phases_Index[phase_Id].time_Headway_Saturation;
+	printf("phase_Id: %d , green_time(need-actual) for clear ratio: %f, actual_queue_num: %f  \n", phase_Id, phases_Index[phase_Id].initial_Demand * phases_Index[phase_Id].time_Headway_Saturation - phases_Index[phase_Id].phase_Info.green_Time, actual_Queue_Num);
+	
+	//两种方式计算绿灯结束剩余车辆的延误：1）只计算到当前延误，偏向于组合搭接； 2）计算到周期结束，偏向于单一相位直接放行；
+	//本次采用第2种方式
+	return ratio * (phases_Index[phase_Id].initial_Demand / phases_Index[phase_Id].phase_Clearance_Ratio * moment_Of_Cycle +
+		max(0.0, actual_Queue_Num * (phases_Index[phase_Id].phase_Info.intersection_Signal_Controller.signal_Cycle_Time - moment_Of_Cycle - green_Time_Effctive)));                 
 }
 
 void Node_Adaptive_Control::get_Phases_Overlap_Info() {             //固定相序下的相位嵌套组合
