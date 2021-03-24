@@ -55,16 +55,19 @@ double Node_Adaptive_Control::queue_Delay_Value(const int phase_Id) {
 
 double Node_Adaptive_Control::red_Stop_Delay_Value(const int phase_Id, const int moment_Of_Cycle) {
 	double ratio = 1.0;
-	int green_Time_Effctive = phases_Index[phase_Id].phase_Info.green_Time + phases_Index[phase_Id].phase_Info.yellow_Time;                          //有效绿灯时长
+	int msignal_Cycle_Time = phases_Index[phase_Id].phase_Info.intersection_Signal_Controller.signal_Cycle_Time;                                       //周期时长
+	int green_Time_Effctive = phases_Index[phase_Id].phase_Info.green_Time + phases_Index[phase_Id].phase_Info.yellow_Time;                            //有效绿灯时长
 	if (phases_Index[phase_Id].volume_Interval > 0)
 		ratio = ((phases_Index[phase_Id].volume_Interval - phases_Index[phase_Id].transit_Car_Volume * car_Volume_Ratio.at("transit")) + phases_Index[phase_Id].transit_Car_Volume * car_Volume_Ratio.at("transit") * car_Delay_Ratio.at("transit")) / phases_Index[phase_Id].volume_Interval;
 	double actual_Queue_Num = phases_Index[phase_Id].initial_Demand / phases_Index[phase_Id].phase_Clearance_Ratio - (static_cast<double>(phases_Index[phase_Id].phase_Info.green_Time) - phases_Index[phase_Id].delay_Vehicles_Start) / phases_Index[phase_Id].time_Headway_Saturation;
-	printf("phase_Id: %d , green_time(need-actual) for clear ratio: %f, actual_queue_num: %f  \n", phase_Id, phases_Index[phase_Id].initial_Demand * phases_Index[phase_Id].time_Headway_Saturation - phases_Index[phase_Id].phase_Info.green_Time, actual_Queue_Num);
+	printf("phase_Id: %d , actual_demand_ratio: %f, actual_queue_num: %f  \n", phase_Id, phases_Index[phase_Id].initial_Demand / phases_Index[phase_Id].phase_Clearance_Ratio, actual_Queue_Num);
 	
-	//两种方式计算绿灯结束剩余车辆的延误：1）只计算到当前延误，偏向于组合搭接； 2）计算到周期结束，偏向于单一相位直接放行；
-	//本次采用第2种方式
-	return ratio * (phases_Index[phase_Id].initial_Demand / phases_Index[phase_Id].phase_Clearance_Ratio * moment_Of_Cycle +
-		max(0.0, actual_Queue_Num * (phases_Index[phase_Id].phase_Info.intersection_Signal_Controller.signal_Cycle_Time - moment_Of_Cycle - green_Time_Effctive)));                 
+	double wait_Vehs_Ratio = 0.5;                                                                                                                    //考虑车辆的均匀到达，红灯等待延误的系数设为0.5   
+	double wait_Before_Green_Ratio = 1.0 * moment_Of_Cycle / msignal_Cycle_Time, 
+		wait_After_Green_Ratio = 1.0 * (msignal_Cycle_Time - moment_Of_Cycle - green_Time_Effctive) / msignal_Cycle_Time;                            //绿灯前/后的等待车辆比例(当考虑绿波车队形式时，调整对应的比例)
+	return ratio * Time_Interval / msignal_Cycle_Time *(wait_Vehs_Ratio * phases_Index[phase_Id].initial_Demand / phases_Index[phase_Id].phase_Clearance_Ratio * wait_Before_Green_Ratio * moment_Of_Cycle +
+		wait_Vehs_Ratio * phases_Index[phase_Id].initial_Demand / phases_Index[phase_Id].phase_Clearance_Ratio * wait_After_Green_Ratio * (msignal_Cycle_Time - green_Time_Effctive) + 
+		max(0.0, actual_Queue_Num) * (msignal_Cycle_Time - green_Time_Effctive));
 }
 
 void Node_Adaptive_Control::get_Phases_Overlap_Info() {             //固定相序下的相位嵌套组合
@@ -235,6 +238,7 @@ bool Node_Adaptive_Control::update_Optimal_Phases(const shared_ptr<Phase_Node>& 
 	double total_Delay = 0.0;
 	int moment_Of_Cycle = 0;
 	phase_Delay_Caculation(mphase_Sequence, moment_Of_Cycle, total_Delay);
+	printf("\n");
 	local_Min_Delay = (total_Delay < local_Min_Delay) ? total_Delay : local_Min_Delay;
 	if (total_Delay < min_Delay) {
 		optimal_Phase_Sequence = mphase_Sequence;
@@ -249,13 +253,13 @@ void Node_Adaptive_Control::phase_Delay_Caculation(const shared_ptr<Phase_Node> 
 	if (head == nullptr)                                                                                                                       
 		return;
 	int lane_Num = phases_Index[head->phase_Id].phase_Lanes.size();
-	total_Delay += phases_Index[head->phase_Id].delay_Vehicles_Start * lane_Num;                                                                //车辆启动延误
+	total_Delay += phases_Index[head->phase_Id].delay_Vehicles_Start;                                                                //车辆启动延误(以平均车道计算，不考虑车道数）
 
     phases_Index[head->phase_Id].delay_Queue_Clearance =  queue_Delay_Value(head->phase_Id);                                                      
-	total_Delay += phases_Index[head->phase_Id].delay_Queue_Clearance * lane_Num;                                                               //车辆清空延误,根据车辆类型和延误系数，计算延误
+	total_Delay += phases_Index[head->phase_Id].delay_Queue_Clearance;                                                               //车辆清空延误,根据车辆类型和延误系数，计算延误(以平均车道计算，不考虑车道数）
 
 	phases_Index[head->phase_Id].delay_Red_Stop = red_Stop_Delay_Value(head->phase_Id, moment_Of_Cycle);
-	total_Delay += phases_Index[head->phase_Id].delay_Red_Stop * lane_Num;                                                                      //红灯停车延误
+	total_Delay += phases_Index[head->phase_Id].delay_Red_Stop;                                                                      //红灯停车延误(以平均车道计算，不考虑车道数）
 
 	phase_Delay_Caculation(head->down, moment_Of_Cycle, total_Delay);       
 	phase_Delay_Caculation(head->next, moment_Of_Cycle, total_Delay);                                                                           //递归计算所有相位的延误
@@ -375,6 +379,7 @@ void Node_Adaptive_Control::modify_Phase_Green_Time(Tree_Stage_Node* head, doubl
 
 double Node_Adaptive_Control::cycle_Delay_Caculation(const int cycle_Time) {
 	double local_Min_Delay = FLT_MAX;
+	printf("cycle_Time: %d \n", cycle_Time);
 	for (int i = 0; i < phases_Sequence.size(); i++) {
 		Tree_Stage_Node* temp_Head;
 		int cycle_Time_Initial = 0;
@@ -402,12 +407,13 @@ double Node_Adaptive_Control::cycle_Delay_Caculation(const int cycle_Time) {
 
 		phases_Index = phases_Index_Temp;
 	}
+	printf("delay: %f \n", local_Min_Delay);
 	return local_Min_Delay;
 }
 
 void Node_Adaptive_Control::implement_Node_Control_Function() {                                                             //TODO:相序中屏障的使用，环周期和屏障时刻的一致相等
-	if (cycle_Time_Lower == cycle_Time_Upper) {
-		min_Delay = cycle_Delay_Caculation(cycle_Time_Lower);  
+	if (abs(cycle_Time_Lower - cycle_Time_Upper) < 2) {
+		min_Delay = cycle_Delay_Caculation(cycle_Time_Upper);  
 		return;
 	}
 	int optimal_Lower = cycle_Time_Lower, optimal_Upper = cycle_Time_Lower + (cycle_Time_Upper - cycle_Time_Lower) / 2;
