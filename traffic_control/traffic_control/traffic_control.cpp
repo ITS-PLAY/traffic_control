@@ -182,7 +182,7 @@ void traffic_Control_Integration(Node_Control_Strategy* node_control, int nodeId
 		Node_Map node = Node_Map(nodeId);
 		vector<Node_Variable_Lane_Control> variable_Lanes;
 		if (variable_Lanes.size() < node.upstream_Nodes.size()) {                                                                                      //每个进口道的初始化
-			for (int i = 0; i < node.upstream_Nodes.size(); i++) {
+			for (int i = 0; i < (int)node.upstream_Nodes.size(); i++) {
 				variable_Lanes.emplace_back(Node_Variable_Lane_Control(node.upstream_Nodes[i], nodeId));                                               //（代码方法）可以通过dynamic_cast
 			}
 		}
@@ -193,7 +193,7 @@ void traffic_Control_Integration(Node_Control_Strategy* node_control, int nodeId
 				continue;
 			}
 
-			for (int i = 0; i < variable_Lanes.size(); i++) {                                                                                           //每个进口道开始执行可变车道功能,先清空数据再获取新数据
+			for (int i = 0; i < (int)variable_Lanes.size(); i++) {                                                                                           //每个进口道开始执行可变车道功能,先清空数据再获取新数据
 				variable_Lanes[i].update_Node_Index_Info();
 				variable_Lanes[i].get_Node_Index_Info();
 				variable_Lanes[i].implement_Node_Control_Function();
