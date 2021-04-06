@@ -37,13 +37,13 @@ void Node_Variable_Lane_Control::implement_Node_Control_Function() {
 		return;
                                                                  
 	for (auto it = variable_Lane_State.begin(); it != variable_Lane_State.end(); it++) {               //切换车道
-		if (turn_Type_Nums[Straight] > 0) {                                                                 
-			entrance_Link_Index.lanes[it->first].maneuvers = vector<Maneuver>{ StraightAllowed };
-			turn_Type_Nums[Straight]--;
+		if (turn_Type_Nums[Left] > 0) {                                                                 
+			entrance_Link_Index.lanes[it->first].maneuvers = vector<Maneuver>{ LeftAllowed };
+			turn_Type_Nums[Left]--;
 		}
 		else {
-			entrance_Link_Index.lanes[it->first].maneuvers = vector<Maneuver>{ LeftAllowed };
-			variable_Lane_State[it->first] = Left;
+			entrance_Link_Index.lanes[it->first].maneuvers = vector<Maneuver>{ StraightAllowed };
+			variable_Lane_State[it->first] = Straight;
 		}
 	}
 	return;
