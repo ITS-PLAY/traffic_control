@@ -1,6 +1,52 @@
-﻿  test_main.cpp
-  traffic_control.cpp
-  variable_lane_control.cpp
-D:\traffic_control\traffic_control\traffic_control\variable_lane_control.cpp(59,160): warning C4244: “*=”: 从“double”转换到“int”，可能丢失数据
+﻿  c_event_detect.cpp
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(20,1): error C2059: 语法错误:“}”
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(20,1): error C2143: 语法错误: 缺少“;”(在“}”的前面)
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(28,13): error C2065: “lanes_Num”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(29,45): error C2065: “lanes_Num”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(30,49): error C2065: “lanes_Num”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(31,49): error C2065: “lanes_Num”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(32,51): error C2065: “lanes_Num”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(32,107): error C2065: “map_Lanes_Queue”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(61,22): error C2061: 语法错误: 标识符“detector_target_info_t”
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.cpp(3,36): error C4430: 缺少类型说明符 - 假定为 int。注意: C++ 不支持默认 int
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.cpp(3,24): error C2146: 语法错误: 缺少“;”(在标识符“receive_data”的前面)
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.cpp(3,39): error C2143: 语法错误: 缺少“;”(在“{”的前面)
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.cpp(3,39): error C2447: “{”: 缺少函数标题(是否是老式的形式表?)
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.h(4,36): error C4430: 缺少类型说明符 - 假定为 int。注意: C++ 不支持默认 int
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.h(4,1): error C2086: “int detector_target_info_t”: 重定义
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.cpp(3): message : 参见“detector_target_info_t”的声明
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.h(4,24): error C2146: 语法错误: 缺少“;”(在标识符“receive_data”的前面)
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.cpp(16,26): error C2146: 语法错误: 缺少“;”(在标识符“mdetector_target”的前面)
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.cpp(16,26): error C2065: “mdetector_target”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.cpp(16,45): error C3861: “receive_data”: 找不到标识符
+D:\traffic_control\traffic_control\traffic_control\c_event_detect.cpp(19,22): error C2065: “mdetector_target”: 未声明的标识符
+  event_detect_in_class.cpp
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.cpp(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(20,1): error C2059: 语法错误:“}”
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(20,1): error C2143: 语法错误: 缺少“;”(在“}”的前面)
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(28,13): error C2065: “lanes_Num”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(29,45): error C2065: “lanes_Num”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(30,49): error C2065: “lanes_Num”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(31,49): error C2065: “lanes_Num”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(32,51): error C2065: “lanes_Num”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(32,107): error C2065: “map_Lanes_Queue”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(61,22): error C2061: 语法错误: 标识符“detector_target_info_t”
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.cpp(9,1): error C2600: “Event_detect::Event_detect”: 不能定义编译器生成的特殊成员函数(必须首先在类中声明)
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.cpp(16,9): error C2065: “intersection_Devices_Detect”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.cpp(16,9): message : 此诊断出现在编译器生成的函数“Event_detect::Event_detect(void)”中
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.cpp(32,32): error C2065: “detector_target_info_t”: 未声明的标识符
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.cpp(32,55): error C2146: 语法错误: 缺少“)”(在标识符“detector_target_info”的前面)
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.cpp(32,76): error C2143: 语法错误: 缺少“;”(在“{”的前面)
+D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.cpp(32,76): error C2447: “{”: 缺少函数标题(是否是老式的形式表?)
+  traffic_incident.cpp
+D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(306,30): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(333,45): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(347,34): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(455,46): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(462,69): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(467,71): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(498,3): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(506,38): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
   正在生成代码...
-  traffic_control.vcxproj -> D:\traffic_control\traffic_control\x64\Debug\traffic_control.exe
