@@ -382,13 +382,8 @@ public:
 	double ave_Stops=0.0;
 };
 
-void read_Detect_JsonFile(string filename, tuple<map<string, vector<vector<Point>>>,int>& detect_Config);                     //读取每个雷达对应进口道的json配置
-void read_Intersection_JsonFile(string filename, tuple<int>& intersection_Config);                                            //读取每个交叉口的json配置  
+//void read_Detect_JsonFile(string filename, tuple<map<string, vector<vector<Point>>>,int>& detect_Config);                     //读取每个雷达对应进口道的json配置
+//void read_Intersection_JsonFile(string filename, tuple<int>& intersection_Config);                                            //读取每个交叉口的json配置  
 
-Vehicleincident_Detection Illegallanechange(Vehicleincident_Detection test, map<int, Vehicleincident_Detection> &II);         //违法变道识别
-bool Accident(Vehicleincident_Detection test);                                                                                //交通事件识别
-
-bool Gateway(vector<Vehicleincident_Detection> vehs_test, int lanes_Num);                                                     //匝道汇入预警
-int Congestion(vector<Vehicleincident_Detection> vehs_test, Max_Queue_Caculation max_queue_test,int zone_volume);                             //拥堵识别
 
 #endif

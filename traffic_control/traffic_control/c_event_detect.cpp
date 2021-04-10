@@ -1,6 +1,20 @@
 
 #include "event_detect_in_class.h"
-detector_target_info_t receive_data() {
+struct detector_target_info_t*  receive_data() {
+	detector_target_info_t* mdetect = new detector_target_info_t;
+	mdetect->sec = 1;
+	mdetect->nsec = 1;
+	mdetect->id = 1;
+	mdetect->laneId = 12;
+	mdetect->label = 5;
+	mdetect->vehicleType = 1;
+	mdetect->radar_px = -1.7;
+	mdetect->radar_py = 205.0;
+	mdetect->radar_vx = 0.0; 
+	mdetect->radar_vy = 3.0;
+	mdetect->dimensions_x = 1.8;
+	mdetect->dimensions_y = 4;
+	return mdetect;
 
 }
 
@@ -13,14 +27,9 @@ void c_call_test() {
 	Event_detect mevent;
 
 	while (true) {
-		detector_target_info_t mdetector_target = receive_data();
-		//Vehicleincident_Detection veh_test = Vehicleincident_Detection(mdetector_target.sec, mdetector_target.nsec, mdetector_target.id, mdetector_target.laneId, mdetector_target.label, 1, mdetector_target.radar_px, mdetector_target.radar_py,\
-		//	mdetector_target.radar_vx, mdetector_target.radar_vy, mdetector_target.dimensions_x, mdetector_target.dimensions_y);
-		mevent.handle_data(mdetector_target);
-
+		detector_target_info_t* mdetector_target = receive_data();
+		mevent.handle_data(*mdetector_target);
 	}
-	
-
 }
 
 

@@ -12,8 +12,7 @@
 #include <stdio.h>
 #include "c_event_detect.h"
 
-int main(void) {
+int main(int argc,char** argv) {
 	c_call_test();
 
-	return 0;
 }
