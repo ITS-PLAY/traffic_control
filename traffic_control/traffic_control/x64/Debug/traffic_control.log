@@ -1,17 +1,10 @@
-﻿  c_event_detect.cpp
-D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-  event_detect_in_class.cpp
-D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.cpp(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-D:\traffic_control\traffic_control\traffic_control\event_detect_in_class.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-  traffic_incident.cpp
-D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(306,30): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
-D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(333,45): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
-D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(347,34): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
-D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(455,46): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(462,69): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
-D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(467,71): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
-D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(498,3): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
-D:\traffic_control\traffic_control\traffic_control\traffic_incident.cpp(506,38): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-  正在生成代码...
-  test_main.c
+﻿  event_detect.cpp
+D:\traffic_control\traffic_control\traffic_control\event_detect.cpp(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\traffic_control\traffic_control\traffic_control\event_detect.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\traffic_control\traffic_control\traffic_control\dayII_scene_internal.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\traffic_control\traffic_control\traffic_control\V2xMsg_UserCommon.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\traffic_control\traffic_control\traffic_control\V2xMsg_UserMap.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\traffic_control\traffic_control\traffic_control\event_detect.cpp(56,17): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\event_detect.cpp(57,18): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\event_detect.cpp(107,158): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
   traffic_control.vcxproj -> D:\traffic_control\traffic_control\x64\Debug\traffic_control.exe

@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <chrono>
 #include <ctime>
-//#include "json/json.h" 
+#include "json/json.h" 
 #include <ostream>
 #include <fstream>
 
@@ -382,8 +382,8 @@ public:
 	double ave_Stops=0.0;
 };
 
-//void read_Detect_JsonFile(string filename, tuple<map<string, vector<vector<Point>>>,int>& detect_Config);                     //读取每个雷达对应进口道的json配置
-//void read_Intersection_JsonFile(string filename, tuple<int>& intersection_Config);                                            //读取每个交叉口的json配置  
+void read_Detect_JsonFile(string filename, tuple<map<string, vector<vector<Point>>>,int>& detect_Config);                     //读取每个雷达对应进口道的json配置
+void read_Intersection_JsonFile(string filename, tuple<int>& intersection_Config);                                            //读取每个交叉口的json配置  
 
 
 #endif

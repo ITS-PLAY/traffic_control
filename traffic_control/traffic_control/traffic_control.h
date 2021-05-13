@@ -1,4 +1,7 @@
-﻿#pragma once
+﻿#ifndef _TRAFFIC_CONTROL_H
+#define _TRAFFIC_CONTROL_H
+
+#pragma once
 #pragma warning(disable:4996)
 #include <iostream>
 #include <math.h>
@@ -11,15 +14,30 @@
 #include <utility>            //swap,forward,move
 #include <float.h>           //定义无穷大
 #include <algorithm>         //max
+#include "json/json.h"
+
+#include "V2xMsg_UserMap.h"
+#include "dayII_scene_internal.h"                                                                                         
 
 using namespace std;
 using namespace std::chrono;
 
 constexpr int Time_Interval = 5 * 60;                            //指标统计的时间间隔,以秒为单位
-using Maneuver = enum { StraightAllowed = 0, LeftAllowed, RightAllowed, UTurnAllowed, LeftTurnOnRedAllowed, RightTurnOnRedAllowed, LaneChangeAllowed, 
-                        NoStoppingAllowed, YieldAllwaysRequired, GoWithHalt, Caution, Reserved };
+using Maneuver = enum { StraightAllowed = 0x80, LeftAllowed = 0x40, RightAllowed = 0x20, UTurnAllowed = 0x10, LeftTurnOnRedAllowed = 0x08, RightTurnOnRedAllowed = 0x04, LaneChangeAllowed = 0x02, 
+                        NoStoppingAllowed = 0x01, YieldAllwaysRequired = 0x8000, GoWithHalt = 0x4000, Caution = 0x2000, Reserved = 0x1000 };
 using Turn_Type = enum { Straight = 11, Left = 12, Right = 13, StraightLeft = 21, StraightRight = 22, LeftRight = 23, All = 24, UTurn = 31 };
-using Lane_Type = enum {};
+using Lane_Type = enum {
+	laneTypeAttributes_PR_NOTHING,
+	laneTypeAttributes_PR_vehicle,
+	laneTypeAttributes_PR_crosswalk,
+	laneTypeAttributes_PR_bikeLane,
+	laneTypeAttributes_PR_sidewalk,
+	laneTypeAttributes_PR_median,
+	laneTypeAttributes_PR_striping,
+	laneTypeAttributes_PR_trackedVehicle,
+	laneTypeAttributes_PR_parking,
+};
+
 using Light_State = enum {};
 using Intersection_Status_Object = enum {};
 
@@ -27,7 +45,7 @@ static const map<string, double> car_Delay_Ratio = { {"small",1.0},{"medium",1.0
 constexpr double turn_Saturation_Limit = 0.8;               //饱和流率的阈值
 constexpr double turn_Change_Limit = 0.4;                   //车道切换后的饱和流率差值的阈值
 
-struct Point {
+struct Point_Map {
 	double latitude;
 	double longitude;
 	double elevation;
@@ -122,7 +140,8 @@ public:
 class Lane_Map {                                            //车道属性类，包含静态属性
 public:
 	Lane_Map() {};
-	Lane_Map(int mupstreamId, int mnodeId, int mlaneId):upstreamId(mupstreamId), nodeId(mnodeId),laneId(mlaneId){
+	Lane_Map(int mupstreamId, int mnodeId, int mlaneId):upstreamId(mupstreamId), nodeId(mnodeId),laneId(mlaneId){};
+	Lane_Map(int mupstreamId, int mnodeId, int mlaneId, node_data_t& mnode_Map_Data) :upstreamId(mupstreamId),nodeId(mnodeId),laneId(mlaneId), node_Map_Data(mnode_Map_Data) {
 		get_Lane_Map_Info();
 	};
 	void get_Lane_Map_Info();
@@ -135,6 +154,7 @@ public:
 	vector<Maneuver> maneuvers;
 	vector<Connection> connectsTo;
 public:
+	node_data_t node_Map_Data;
 	int signal_Controller_Id;
 	int phase_Id;
 };
@@ -143,14 +163,18 @@ class Lane_Index :public Lane_Map {                          //车道动态类�
 public:
 	Lane_Index() {};
 	Lane_Index(int mupstreamId, int mnodeId, int mlaneId):Lane_Map(mupstreamId,mnodeId,mlaneId) {
-		get_Lane_Volume_Info();
-		lane_Phase_Info = Signal_Phase_Info(signal_Controller_Id, phase_Id);
-		capacity_Intersection_Caculation();
-		get_Lane_Queue_Info();
-		lane_Delay_Caculation();
+		//get_Lane_Volume_Info();
+		//lane_Phase_Info = Signal_Phase_Info(signal_Controller_Id, phase_Id);
+		//capacity_Intersection_Caculation();
+		//get_Lane_Queue_Info();
 	};
+	Lane_Index(int mupstreamId, int mnodeId, int mlaneId, node_data_t& mnode_Map_Data, node_traffic_flow_info_t& mnode_Index_Data):
+		Lane_Map(mupstreamId, mnodeId, mlaneId, mnode_Map_Data), node_Index_Data(mnode_Index_Data) {
+		get_Lane_Index_Info();
+	};
+	void get_Lane_Index_Info();
 	void get_Lane_Volume_Info();
-	void get_Lane_Queue_Info() {};
+	void get_Lane_Queue_Info();
 	void lane_Delay_Caculation() {};
 	void capacity_Intersection_Caculation();
 public:
@@ -171,6 +195,8 @@ public:
 	double delay_Red_Stop = 0.0;
 	double delay_Queue_Clearance = 0.0;
 public:
+	node_traffic_flow_info_t node_Index_Data;
+	lane_traffic_flow_info_t lane_Index_Data;
 	Signal_Phase_Info lane_Phase_Info;
 };
 
@@ -178,8 +204,11 @@ class Link_Map {                                             //路段属性类�
 public:
 	Link_Map() {};
 	Link_Map(int mupstreamId, int mnodeId):upstreamNodeId_nodeid(mupstreamId),nodeId(mnodeId){
-		get_Link_Map_Info();
+		//get_Link_Map_Info();
 	};
+	Link_Map(int mupstreamId, int mnodeId, node_data_t& mnode_Map_Data) :upstreamNodeId_nodeid(mupstreamId), nodeId(mnodeId), node_Map_Data(mnode_Map_Data){
+		get_Link_Map_Info();
+	}
 	void get_Link_Map_Info();
 public:
 	string name;
@@ -188,9 +217,10 @@ public:
 	int upstreamNodeId_region;
 	double link_Width;
 	vector<Speed_Limit> speed_Limits;
-	vector<Point> points;
+	vector<Point_Map> points;
 	vector<Movement> movements;
 public:
+	node_data_t node_Map_Data;
 	map<int,Lane_Map> lanes;
 };
 
@@ -198,11 +228,16 @@ class Link_Index :public Link_Map {                         //路段动态类，
 public:
 	Link_Index() {};
 	Link_Index(int mupstreamId, int mnodeId):Link_Map(mupstreamId,mnodeId) {
+		//get_Link_Index_Info();
+	};
+	Link_Index(int mupstreamId, int mnodeId, node_data_t& mnode_Map_Data, node_traffic_flow_info_t& mnode_Index_Data) :
+		Link_Map(mupstreamId, mnodeId, mnode_Map_Data), node_Index_Data(mnode_Index_Data) {
 		get_Link_Index_Info();
 	};
 	void get_Link_Index_Info();
 	void movements_Index_Caculation();
 public:
+	node_traffic_flow_info_t node_Index_Data;
 	map<Turn_Type,Movement_Index> link_Movements_Index;    //左转、直行对应的转向指标
 	map<int,Lane_Index> lanes_Index;
 };
@@ -211,20 +246,25 @@ class Node_Map {                                           //交叉口属性类�
 public:
 	Node_Map() {};
 	Node_Map(int mnodeId):nodeId(mnodeId) {
-		get_Node_Map_Info();
+		//get_Node_Map_Info();
 	};
+	Node_Map(node_data_t& mnode_Map_Data) :node_Map_Data(mnode_Map_Data) {
+		get_Node_Map_Info();
+	}
 	void get_Node_Map_Info();
 public:
+	node_data_t node_Map_Data;
 	int nodeId;
-	string node_Name;
-	vector<int> upstream_Nodes;
+	map<int, Link_Map> links;
 };
 
 class Node_Index :public Node_Map{                          //交叉口动态类
 public:
 	Node_Index() {};
-	Node_Index(int mnodeId) :Node_Map(mnodeId) {}
+	Node_Index(node_data_t& mnode_Map_Data, node_traffic_flow_info_t& mnode_Index_Data) :Node_Map(mnode_Map_Data), node_Index_Data(mnode_Index_Data){}
+	void get_Node_Index_Info();
 public:
+	node_traffic_flow_info_t node_Index_Data;
 	map<int,Link_Index> entrance_Links_Index;
 };
 
@@ -241,9 +281,13 @@ class Node_Variable_Lane_Control:public Node_Control_Strategy{      //可变导�
 public:
 	Node_Variable_Lane_Control() {};
 	Node_Variable_Lane_Control(int mupstreamId,int mnodeId){
-		entrance_Link_Index = Link_Index(mupstreamId, mnodeId);
-		get_Variable_Lane_State_Info();
+		//entrance_Link_Index = Link_Index(mupstreamId, mnodeId);
+		//get_Variable_Lane_State_Info();
 	};
+	Node_Variable_Lane_Control(int mupstreamId, int mnodeId, node_data_t& mnode_Map_Data, node_traffic_flow_info_t& mnode_Index_Data):node_Map_Data(mnode_Map_Data){
+		entrance_Link_Index = Link_Index(mupstreamId, mnodeId, mnode_Map_Data, mnode_Index_Data);
+		get_Variable_Lane_State_Info();
+	}
 public:
 	virtual void get_Node_Index_Info() override;
 	virtual void implement_Node_Control_Function() override;
@@ -252,10 +296,26 @@ public:
 	bool modify_Movements_Index(int laneId);
 	void get_Variable_Lane_State_Info();
 public:
+	node_data_t node_Map_Data;
 	map<int, Turn_Type> variable_Lane_State;                        //已渠化的可变车道当前状态
 	map<int, int> map_Iterative_Nums;                               //每个车道，周期迭代的次数
 	Link_Index entrance_Link_Index;
 };
 /*--------------------------------------------------------------------------------------------------------*/
 
-void traffic_Control_Integration(Node_Control_Strategy *node_control, int nodeId);
+class Node_Control_Integration {
+public:
+	Node_Control_Integration(int nodeId, node_data_t& mnode_Map_Data, node_traffic_flow_info_t& mnode_Index_Data) :node_Map_Data(mnode_Map_Data), node_Index_Data(mnode_Index_Data) {};
+	void initial_Node_Control();
+public:
+	node_data_t node_Map_Data;
+	node_traffic_flow_info_t node_Index_Data;
+	vector<Node_Variable_Lane_Control> variable_Lanes;
+};
+
+/*
+template<typename T>
+vector<T> traffic_Control_Integration(const int nodeId, map_data_t& mmap_data);
+*/
+
+#endif

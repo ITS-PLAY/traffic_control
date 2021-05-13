@@ -73,7 +73,29 @@ void Node_Variable_Lane_Control::put_Control_Delivery() {
 }
 
 void Node_Variable_Lane_Control::get_Variable_Lane_State_Info() {
-	variable_Lane_State.emplace(4, Straight);
+	//读取车道编号
+	int laneId = 4;                                                                   //TODO::读取JSON
+
+	//根据车道编号，查找对应的转向
+	Turn_Type lane_Turn_Type;
+	vector<Maneuver> temp = entrance_Link_Index.lanes[laneId].maneuvers;
+	if (temp.size() == 1) {                                                           //专用车道
+		switch (temp[0]) {
+		case StraightAllowed: lane_Turn_Type = Straight; 
+			break;
+	    case LeftAllowed: lane_Turn_Type = Left;
+			break;
+		default:
+			break;
+		}
+	} 
+	for (int i = 0; i < temp.size(); i++) {                                           //TODO::混合车道
+
+	}
+
+	variable_Lane_State.emplace(laneId, lane_Turn_Type);
 	return;
 }
+
+void read_From_Json_File(string file_Name);
 

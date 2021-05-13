@@ -18,7 +18,7 @@
     <ClCompile Include="test_main.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="event_detect_in_class.cpp">
+    <ClCompile Include="event_detect.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="traffic_incident.cpp">
@@ -27,9 +27,24 @@
     <ClCompile Include="c_event_detect.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="traffic_control.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="variable_lane_control.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="json_reader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="json_value.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="json_writer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="event_detect_in_class.h">
+    <ClInclude Include="event_detect.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="traffic_incident.h">
@@ -38,5 +53,22 @@
     <ClInclude Include="c_event_detect.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="traffic_control.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="dayII_scene_internal.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="V2xMsg_UserMap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="V2xMsg_UserCommon.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="json_valueiterator.inl">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>
