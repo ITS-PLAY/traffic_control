@@ -176,6 +176,12 @@ void Node_Map::get_Node_Map_Info() {
 	return;
 }
 
+void Node_Control_Integration::initial_Node_Control() {
+	node_Adaptive_Control = Node_Adaptive_Control(1);
+	return;
+}
+
+/*
 void traffic_Control_Integration(Node_Control_Strategy* node_control, int nodeId) {
 	using second_Clock_Type = time_point<system_clock, seconds>;
 	if (typeid(*node_control) == typeid(Node_Variable_Lane_Control)) {                                                                                  //执行可变车道控制
@@ -215,3 +221,4 @@ void traffic_Control_Integration(Node_Control_Strategy* node_control, int nodeId
 
 	return;
 }
+*/

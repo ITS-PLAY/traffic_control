@@ -3,10 +3,16 @@
 using namespace std;
 
 int main() {
-	Node_Adaptive_Control node_Adaptive_Control;
-	traffic_Control_Integration(&node_Adaptive_Control, 1);
-	//Node_Variable_Lane_Control node_Variable_Control;
-	//traffic_Control_Integration(&node_Variable_Control, 1);
+	Node_Control_Integration node_Control(1);
+
+	while (true) {
+		second_Clock_Type current_Time = time_point_cast<seconds>(system_clock::now());
+		//if ((current_Time.time_since_epoch().count() % Time_Interval) == 0) {
+		node_Control.node_Adaptive_Control.get_Node_Index_Info();
+		node_Control.node_Adaptive_Control.implement_Node_Control_Function();
+		node_Control.node_Adaptive_Control.update_Node_Index_Info();
+		//}
+	}
 
 	return 0;
 }

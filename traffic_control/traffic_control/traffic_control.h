@@ -1,4 +1,7 @@
-﻿#pragma once
+﻿#ifndef _TRAFFIC_CONTROL_H
+#define _TRAFFIC_CONTROL_H
+
+#pragma once
 #pragma warning(disable:4996)
 #include <iostream>
 #include <math.h>
@@ -15,8 +18,9 @@ using namespace std;
 using namespace std::chrono;
 
 constexpr int Time_Interval = 5 * 60;                            //指标统计的时间间隔,以秒为单位
-using Maneuver = enum { StraightAllowed = 0, LeftAllowed, RightAllowed, UTurnAllowed, LeftTurnOnRedAllowed, RightTurnOnRedAllowed, LaneChangeAllowed, 
-                        NoStoppingAllowed, YieldAllwaysRequired, GoWithHalt, Caution, Reserved };
+using Maneuver = enum {
+	StraightAllowed = 0x80, LeftAllowed = 0x40, RightAllowed = 0x20, UTurnAllowed = 0x10, LeftTurnOnRedAllowed = 0x08, RightTurnOnRedAllowed = 0x04, LaneChangeAllowed = 0x02,
+	NoStoppingAllowed = 0x01, YieldAllwaysRequired = 0x8000, GoWithHalt = 0x4000, Caution = 0x2000, Reserved = 0x1000};
 using Turn_Type = enum { Straight = 11, Left = 12, Right = 13, StraightLeft = 21, StraightRight = 22, LeftRight = 23, All = 24, UTurn = 31 };
 using Lane_Type = enum {};
 using Light_State = enum {};
@@ -27,12 +31,13 @@ static const map<string, double> car_Volume_Ratio = { {"small",1.0},{"medium",1.
 constexpr double turn_Saturation_Limit = 0.8;               //饱和流率的阈值
 constexpr double turn_Change_Limit = 0.4;                   //车道切换后的饱和流率差值的阈值
 
-struct Point {
+using second_Clock_Type = time_point<system_clock, seconds>;
+
+struct Point_Map {
 	double latitude;
 	double longitude;
 	double elevation;
 };
-
 struct Speed_Limit {
 	int speedLimit_Type;
 	double speed;
@@ -58,10 +63,10 @@ class Movement_Index :public Movement {
 public:
 	Movement_Index() {};
 public:
-	int movement_Volume = 0;
-	int movement_Capacity = 0;
-	double movement_Sat_Ratio = 0.0;
-	int lanes_Nums = 0;
+	int movement_Volume = 0;                                 //转向流量，单位pcu/h
+	int movement_Capacity = 0;                               //转向通行能力，单位pch/h；已加入信控因素
+	double movement_Sat_Ratio = 0.0;                         //转向饱和流率
+	int lanes_Nums = 0;                                      //转向对应的车道数
 };
 
 /*-----------------------------------------------------------------------------------*/
@@ -190,7 +195,7 @@ public:
 	int upstreamNodeId_region;
 	double link_Width;
 	vector<Speed_Limit> speed_Limits;
-	vector<Point> points;
+	vector<Point_Map> points;
 	vector<Movement> movements;
 public:
 	map<int,Lane_Map> lanes;
@@ -205,7 +210,7 @@ public:
 	void get_Link_Index_Info();
 	void movements_Index_Caculation();
 public:
-	map<Turn_Type,Movement_Index> link_Movements_Index;
+	map<Turn_Type,Movement_Index> link_Movements_Index;    //左转、直行对应的转向指标
 	map<int,Lane_Index> lanes_Index;
 };
 
@@ -226,6 +231,7 @@ class Node_Index :public Node_Map{                          //交叉口动态类
 public:
 	Node_Index() {};
 	Node_Index(int mnodeId) :Node_Map(mnodeId) {}
+	void get_Node_Index_Info();
 public:
 	map<int,Link_Index> entrance_Links_Index;
 };
@@ -350,7 +356,7 @@ public:
 		get_Phases_Overlap_Info();
 		get_Phases_Sequence_Info();	
 	};
-	~Node_Adaptive_Control();
+	//~Node_Adaptive_Control();
 public:
 	virtual void get_Node_Index_Info() override;
 	virtual void implement_Node_Control_Function() override;
@@ -394,10 +400,21 @@ private:
 
 public:
 	Node_Index node_Index;                                                   //交叉口的动态指标
-	Tree_Stage_Node* optimal_Head;                                           //决策树根结点
+	Tree_Stage_Node* optimal_Head = nullptr;                                           //决策树根结点
 	shared_ptr<Phase_Node> optimal_Phase_Sequence;                           //最优相序的链表头
 	map<int, Phase_Index> optimal_Phase_Scheme;                              //最优相位方案
 	int optimal_Cycle_Time;                                                  //最优的周期时长
 };
 
-void traffic_Control_Integration(Node_Control_Strategy *node_control, int nodeId);
+class Node_Control_Integration {
+public:
+	Node_Control_Integration(int nodeId) {
+		initial_Node_Control();
+	};
+	void initial_Node_Control();
+public:
+	Node_Adaptive_Control node_Adaptive_Control;
+	vector<Node_Variable_Lane_Control> variable_Lanes_Control;
+};
+
+#endif

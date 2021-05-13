@@ -459,6 +459,7 @@ void Node_Adaptive_Control::update_Node_Index_Info() {
 	}              
 	optimal_Phase_Scheme.clear();
 	phases_Index.clear();
+	min_Delay = FLT_MAX;
 
 	delete_Tree_Node(optimal_Head);
 	return;
@@ -473,8 +474,4 @@ void Node_Adaptive_Control::delete_Tree_Node(Tree_Stage_Node* root) {
 	return;
 }
 
-Node_Adaptive_Control::~Node_Adaptive_Control()
-{
-	delete_Tree_Node(optimal_Head);
-}
 
