@@ -391,7 +391,7 @@ private:
 	vector<shared_ptr<Phase_Node>> phases_Sequence_Modified;                //根据可行空间和嵌套矩阵，修改后的相序
 	map<int, Phase_Index> phases_Index;                                     //相位的指标，包含清空比例
 
-	int cycle_Time_Upper = 120;                                              //周期的最大值
+	int cycle_Time_Upper = 180;                                              //周期的最大值
 	int cycle_Time_Lower = 80;                                              //周期的最小值 60+4*3
 	double min_Delay = FLT_MAX;
 	int time_Interval = 5;                                                  //动态指标的统计间隔 
