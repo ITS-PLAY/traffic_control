@@ -1,5 +1,5 @@
 ﻿  adaptive_control.cpp
-D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(255,64): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(268,64): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
   test_main.cpp
   traffic_control.cpp
   variable_lane_control.cpp

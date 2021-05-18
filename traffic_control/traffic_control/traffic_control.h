@@ -369,7 +369,7 @@ public:
 	void initial_Phases_Green_Time(const shared_ptr<Phase_Node>& mphase_Sequence, shared_ptr<Phase_Node>& mphase_Sequence_Modified, int& cycle_Time);
 	void get_Phases_Index_Info();                                                                                                                     //从Lane_Index中计算Phase_Index
 	void update_Phase_Index_Info();                                                                                                                  //更新相位指标
-	void modify_Cycle_Time(shared_ptr<Phase_Node>& mphase_Sequence_Modified, const double ratio, const int cycle_Time);                              //调整周期长度，并初始化清空比例
+	void modify_Cycle_Time(shared_ptr<Phase_Node>& mphase_Sequence_Modified, const double ratio);                                                    //调整周期长度，并初始化清空比例
 	void phase_Delay_Caculation(const shared_ptr<Phase_Node> head, int& moment_Of_Cycle, double& total_Delay);
 	double queue_Delay_Value(const int phase_Id);                                                                                                    //某一相位的排队车辆清空时间
 	double red_Stop_Delay_Value(const int phase_Id, const int moment_Of_Cycle);                                                                                                 //某一相位的红灯停车等待时间
@@ -384,7 +384,8 @@ public:
 	map<int, Phase_Index> copy_Phases_Index() { return phases_Index; };                                                                              //备份phases_Index
 	void delete_Tree_Node(Tree_Stage_Node* root);                                                                                                    //删除二叉树的内存空间
 
-	bool update_Optimal_Phases(const shared_ptr<Phase_Node>& mphase_Sequence, double& local_Min_Delay);                                              //根据延误最小，更新最优相序和相位方案
+	bool update_Optimal_Phases(const shared_ptr<Phase_Node>& mphase_Sequence, map<int, Phase_Index>& local_Phases_Index, double& local_Min_Delay, double& cycle_Min_Delay);    //根据延误最小，更新最优相序和相位方案
+	void adjust_Cycle_Time(const int cycle_Time);                                                                                                          //根据相位累计的周期时长，赋值最终的周期时长
 private:
 	map<int, shared_ptr<Stage_Node>> phases_Overlap;                        //相序的嵌套矩阵
 	vector<shared_ptr<Phase_Node>> phases_Sequence;                         //相序的可行空间
