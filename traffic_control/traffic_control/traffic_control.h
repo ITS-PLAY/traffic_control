@@ -369,7 +369,7 @@ public:
 	void initial_Phases_Green_Time(const shared_ptr<Phase_Node>& mphase_Sequence, shared_ptr<Phase_Node>& mphase_Sequence_Modified, int& cycle_Time);
 	void get_Phases_Index_Info();                                                                                                                     //从Lane_Index中计算Phase_Index
 	void update_Phase_Index_Info();                                                                                                                  //更新相位指标
-	void modify_Cycle_Time(shared_ptr<Phase_Node>& mphase_Sequence_Modified, const double ratio);                                                    //调整周期长度，并初始化清空比例
+	void modify_Clearance_Ratio(shared_ptr<Phase_Node>& mphase_Sequence_Modified, const double ratio);                                                    //调整周期长度，并初始化清空比例
 	void phase_Delay_Caculation(const shared_ptr<Phase_Node> head, int& moment_Of_Cycle, double& total_Delay);
 	double queue_Delay_Value(const int phase_Id);                                                                                                    //某一相位的排队车辆清空时间
 	double red_Stop_Delay_Value(const int phase_Id, const int moment_Of_Cycle);                                                                                                 //某一相位的红灯停车等待时间
@@ -392,7 +392,7 @@ private:
 	vector<shared_ptr<Phase_Node>> phases_Sequence_Modified;                //根据可行空间和嵌套矩阵，修改后的相序
 	map<int, Phase_Index> phases_Index;                                     //相位的指标，包含清空比例
 
-	int cycle_Time_Upper = 180;                                              //周期的最大值
+	int cycle_Time_Upper = 120;                                              //周期的最大值
 	int cycle_Time_Lower = 80;                                              //周期的最小值 60+4*3
 	double min_Delay = FLT_MAX;
 	int time_Interval = 5;                                                  //动态指标的统计间隔 
