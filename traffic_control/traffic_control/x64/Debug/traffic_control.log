@@ -1,7 +1,12 @@
 ﻿  adaptive_control.cpp
-D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(175,23): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(179,23): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(273,64): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
-D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(304,21): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(308,21): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(172,23): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(176,23): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(271,64): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(302,21): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+D:\traffic_control\traffic_control\traffic_control\adaptive_control.cpp(306,21): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+  test_main.cpp
+  traffic_control.cpp
+  variable_lane_control.cpp
+D:\traffic_control\traffic_control\traffic_control\variable_lane_control.cpp(60,160): warning C4244: “*=”: 从“double”转换到“int”，可能丢失数据
+  正在生成代码...
   traffic_control.vcxproj -> D:\traffic_control\traffic_control\x64\Debug\traffic_control.exe
